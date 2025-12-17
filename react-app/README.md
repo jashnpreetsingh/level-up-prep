@@ -87,8 +87,3 @@ Open source for educational purposes. Feel free to fork and customize for your o
 ## 🙏 Acknowledgments
 
 Inspired by the Solo Leveling manhwa/anime. Built to help engineers level up their interview skills systematically.
-
----
-
-**Interview Date**: January 5, 2026  
-**Current Status**: Training Arc 🏋️
