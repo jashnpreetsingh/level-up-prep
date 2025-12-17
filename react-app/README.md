@@ -1,6 +1,6 @@
 # 🌑 Shadow Monarch Training System
 
-> *"Arise."* - Daily quest tracker for Google ML Engineer interview prep
+> *"Arise."* - Daily quest tracker for ML Engineer interview prep
 
 A gamified learning tracker inspired by Solo Leveling, designed for systematic ML/DSA interview preparation. Track your progress, level up your skills, and become the Shadow Monarch of technical interviews.
 
@@ -46,7 +46,7 @@ solo-leveling/
 
 ## 🎓 Syllabus Overview
 
-### DSA (Dec 8 - Jan 5)
+### DSA
 - Arrays, Linked Lists, Trees, Graphs
 - Dynamic Programming, Binary Search
 - Heaps, Tries, System Design
