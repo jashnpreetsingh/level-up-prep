@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM: SHADOW MONARCH — V4.2 (Restored)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-red: #ff2a2a;
+            --neon-gold: #ffd700;
+            --system-bg: #050505;
+            --system-panel: #0a0a0a;
+            --rank-s: #ffaa00; 
+            --rank-ss: #ff2a2a;
+        }
+
+        body { background-color: var(--system-bg); color: #e0e0e0; font-family: 'JetBrains Mono', monospace; background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 20px 20px; }
+        .glitch { animation: glitch 2s infinite; }
+        @keyframes glitch { 0% { text-shadow: 2px 2px 0px var(--neon-blue); } 50% { text-shadow: -2px -2px 0px var(--neon-purple); } 100% { text-shadow: 2px 2px 0px var(--neon-blue); } }
+
+        /* Stats Hexagons */
+        .stat-hex { clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 70px; height: 80px; border: 1px solid #333; transition: all 0.3s; }
+        .stat-hex.str { border-color: var(--neon-red); color: var(--neon-red); }
+        .stat-hex.int { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .stat-hex.spd { border-color: var(--neon-blue); color: var(--neon-blue); }
+
+        .panel { background: var(--system-panel); border: 1px solid #1a1a1a; box-shadow: 0 0 15px rgba(0,0,0,0.7); }
+        
+        /* Shadow Cards */
+        .shadow-card { background: linear-gradient(135deg, #0a0a0a, #111); border: 1px solid #333; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .shadow-card:hover { transform: translateY(-2px); border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(188,19,254,0.15); }
+        .shadow-rank-s { border-color: var(--rank-s); box-shadow: 0 0 10px rgba(255, 170, 0, 0.2); }
+        .shadow-rank-ss { border-color: var(--rank-ss); box-shadow: 0 0 15px rgba(255, 42, 42, 0.3); animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .modal-overlay { backdrop-filter: blur(5px); background: rgba(0,0,0,0.9); }
+        .timer-badge { font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+        .active-tab { background: #00f3ff; color: black; font-weight: bold; box-shadow: 0 0 10px rgba(0,243,255,0.4); }
+
+        /* Save Slots */
+        .save-slot { border: 1px solid #333; padding: 8px; margin-bottom: 8px; background: #0c0c0c; display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+        .save-slot:hover { border-color: #00f3ff; }
+        .save-slot.empty { opacity: 0.5; border-style: dashed; }
+        
+        /* Locked Button */
+        .btn-locked { background: #222; color: #555; cursor: not-allowed; border: 1px solid #333; }
+
+        /* Difficulty indicators */
+        .diff-easy { color: #4ade80; }
+        .diff-medium { color: #fbbf24; }
+        .diff-hard { color: #f87171; }
+        
+        /* Topic badge */
+        .topic-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .topic-arrays { background: #1e40af; }
+        .topic-dp { background: #7c3aed; }
+        .topic-graph { background: #dc2626; }
+        .topic-tree { background: #059669; }
+        .topic-design { background: #ea580c; }
+        .topic-binary { background: #0891b2; }
+        .topic-heap { background: #a21caf; }
+        .topic-sliding { background: #65a30d; }
+        .topic-trie { background: #e11d48; }
+        .topic-backtrack { background: #0f766e; }
+    </style>
+</head>
+<body class="min-h-screen p-4 pb-20">
+
+    <div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-end border-b border-gray-800 pb-6">
+        <div>
+            <div class="text-[10px] text-gray-500 tracking-[0.3em] mb-1">PLAYER: SHADOW MONARCH</div>
+            <h1 class="text-4xl font-black italic text-white tracking-tighter glitch">SYSTEM <span class="text-[#00f3ff]">V4.2</span></h1>
+            <div class="flex gap-4 mt-6">
+                <div class="stat-hex str"><span class="text-[9px] font-bold">STR</span><span class="text-lg font-black" id="stat-str">0</span></div>
+                <div class="stat-hex int"><span class="text-[9px] font-bold">INT</span><span class="text-lg font-black" id="stat-int">0</span></div>
+                <div class="stat-hex spd"><span class="text-[9px] font-bold">SPD</span><span class="text-lg font-black" id="stat-spd">0</span></div>
+            </div>
+        </div>
+        
+        <div class="text-right mt-6 md:mt-0">
+            <div class="text-xs text-gray-500 mb-1">GOOGLE GATE OPENS IN</div>
+            <div class="text-3xl font-bold text-red-500 font-mono" id="countdown">LOADING...</div>
+            <div class="mt-4 flex justify-end gap-2 items-center">
+                 <div class="mr-4">
+                    <button id="btn-legacy" onclick="exportLegacy()" class="btn-locked px-3 py-2 rounded text-[10px] font-bold flex items-center gap-2" title="Locked until Jan 5 or 100% Completion">
+                        <i data-lucide="trophy" class="w-3 h-3"></i> DOWNLOAD LEGACY (CSV)
+                    </button>
+                 </div>
+                 <div class="text-right">
+                    <div class="text-[10px] text-gray-500">SYSTEM LEVEL</div>
+                    <div class="text-xl text-[#00f3ff] font-bold" id="level-display">1</div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-8 space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-[#00f3ff] font-bold text-lg tracking-widest border-l-4 border-[#00f3ff] pl-3">ACTIVE DUNGEONS</h2>
+                <div class="flex gap-2 text-xs">
+                    <button onclick="switchContext('DSA')" id="btn-dsa" class="px-4 py-1 border border-gray-700 rounded transition-all active-tab">DSA</button>
+                    <button onclick="switchContext('ML')" id="btn-ml" class="px-4 py-1 border border-gray-700 text-gray-400 hover:text-white rounded transition-all">ML</button>
+                    <button onclick="switchContext('MATH')" id="btn-math" class="px-4 py-1 border border-gray-700 text-gray-400 hover:text-white rounded transition-all">MATH</button>
+                    <button onclick="switchContext('BEHAVIORAL')" id="btn-behavioral" class="px-4 py-1 border border-gray-700 text-gray-400 hover:text-white rounded transition-all">GOOGLEYNESS</button>
+                </div>
+            </div>
+            <div class="mb-4 flex gap-2 items-center">
+                <input type="text" id="search-input" placeholder="Search problems..." class="flex-1 bg-[#111] border border-gray-700 text-white px-3 py-2 text-xs focus:border-[#00f3ff] outline-none" onkeyup="filterProblems()">
+                <select id="filter-difficulty" onchange="filterProblems()" class="bg-[#111] border border-gray-700 text-white px-3 py-2 text-xs focus:border-[#00f3ff] outline-none">
+                    <option value="">All Difficulties</option>
+                    <option value="S">Legendary (S)</option>
+                    <option value="A">Hard (A)</option>
+                    <option value="B">Medium (B)</option>
+                    <option value="C">Easy (C)</option>
+                </select>
+                <select id="filter-status" onchange="filterProblems()" class="bg-[#111] border border-gray-700 text-white px-3 py-2 text-xs focus:border-[#00f3ff] outline-none">
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div id="quest-container" class="space-y-4 min-h-[500px]"></div>
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+            
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-[#00f3ff] font-bold mb-3 tracking-widest">CHRONOS STONE (SAVES)</h3>
+                <div id="save-slots-container">
+                    </div>
+                <button onclick="saveGame(1)" class="w-full mt-2 py-1 bg-[#111] border border-gray-700 text-[10px] text-gray-400 hover:text-white hover:border-[#00f3ff]">+ CREATE MANUAL CHECKPOINT</button>
+            </div>
+
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-[#ffd700] font-bold mb-2 tracking-widest">SOUL CRYSTAL (HARD BACKUP)</h3>
+                <p class="text-[10px] text-gray-500 mb-3">
+                    <span id="storage-status" class="text-[#00f3ff]">Using IndexedDB (Large Capacity)</span><br>
+                    Extract your soul to a file to prevent permanent death.
+                </p>
+                
+                <div class="flex gap-2">
+                    <button onclick="downloadBackup()" class="flex-1 py-2 bg-[#111] border border-yellow-600/50 text-yellow-500 text-[10px] font-bold hover:bg-yellow-600 hover:text-black">
+                        ⬇ EXTRACT SOUL
+                    </button>
+                    <button onclick="triggerUpload()" class="flex-1 py-2 bg-[#111] border border-blue-600/50 text-blue-500 text-[10px] font-bold hover:bg-blue-600 hover:text-white">
+                        ⬆ REINCARNATE
+                    </button>
+                </div>
+                <input type="file" id="backup-upload" class="hidden" onchange="uploadBackup(this)">
+            </div>
+
+            <div>
+                <h2 class="text-[#bc13fe] font-bold text-lg tracking-widest border-l-4 border-[#bc13fe] pl-3 mb-4">SHADOW ARMY</h2>
+                <div id="commander-grid" class="grid grid-cols-1 gap-3 mb-4"></div>
+                <div id="legion-grid" class="grid grid-cols-2 gap-2"></div>
+            </div>
+
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-[#00f3ff] font-bold mb-3 tracking-widest">📊 PROGRESS ANALYTICS</h3>
+                <div id="analytics-container" class="space-y-3">
+                    <div class="text-xs">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-400">Overall Progress</span>
+                            <span class="text-[#00f3ff] font-bold" id="overall-progress">0%</span>
+                        </div>
+                        <div class="w-full bg-[#111] h-2 rounded">
+                            <div class="bg-[#00f3ff] h-2 rounded transition-all" id="overall-progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="text-xs">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-400">Daily Streak</span>
+                            <span class="text-yellow-400 font-bold" id="streak-count">0 days</span>
+                        </div>
+                    </div>
+                    <div class="text-xs">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-400">Problems Today</span>
+                            <span class="text-green-400 font-bold" id="today-count">0</span>
+                        </div>
+                    </div>
+                    <button onclick="showAnalytics()" class="w-full mt-2 py-1 bg-[#111] border border-gray-700 text-[10px] text-gray-400 hover:text-white hover:border-[#00f3ff]">VIEW DETAILED STATS</button>
+                </div>
+            </div>
+
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-yellow-400 font-bold mb-3 tracking-widest">🎯 WEAK AREAS</h3>
+                <div id="weak-areas-container" class="text-xs text-gray-400">
+                    <div class="text-center py-2">Complete problems to identify weak areas</div>
+                </div>
+            </div>
+
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-green-400 font-bold mb-3 tracking-widest">🔄 REVISION QUEUE</h3>
+                <div id="revision-container" class="text-xs text-gray-400">
+                    <div class="text-center py-2">Problems due for revision will appear here</div>
+                </div>
+                <button onclick="showRevisionQueue()" class="w-full mt-2 py-1 bg-[#111] border border-gray-700 text-[10px] text-gray-400 hover:text-white hover:border-green-400">VIEW REVISION LIST</button>
+            </div>
+
+            <div class="panel p-4 border-t border-gray-800">
+                <h3 class="text-xs text-purple-400 font-bold mb-3 tracking-widest">💡 RECOMMENDATIONS</h3>
+                <div id="recommendations-container" class="text-xs text-gray-400 space-y-2">
+                    <div class="text-center py-2">Complete problems to get recommendations</div>
+                </div>
+            </div>
+
+             <div class="panel p-4 mt-6 border-t border-gray-800">
+                <h3 class="text-xs text-gray-500 font-bold mb-2">SYSTEM CONTROLS</h3>
+                <button onclick="resetSystem()" class="w-full py-2 bg-red-900/10 border border-red-900/50 text-red-500 text-xs font-bold hover:bg-red-900 hover:text-white">RESET ALL DATA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Indicator -->
+    <div id="save-indicator" class="fixed top-4 right-4 bg-[#00f3ff] text-black px-4 py-2 rounded font-bold text-xs hidden z-50">
+        ✓ SAVED
+    </div>
+
+    <div id="hunt-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center" onclick="if(event.target.id === 'hunt-modal') cancelHunt()">
+        <div class="bg-black border border-[#00f3ff] p-8 max-w-lg w-full shadow-[0_0_50px_rgba(0,243,255,0.2)] text-center relative">
+            
+            <div id="hunt-view-active">
+                <div class="text-[#00f3ff] text-xs tracking-widest mb-2 animate-pulse">DUNGEON ACTIVE</div>
+                <h2 class="text-2xl font-bold text-white mb-2" id="hunt-title">Two Sum</h2>
+                <div id="hunt-leetcode-link" class="mb-4"></div>
+                
+                <div class="text-6xl font-mono font-black text-white mb-2 timer-badge" id="hunt-timer">00:00</div>
+                <div class="text-xs text-gray-500 mb-8">TARGET: <span id="hunt-target">15:00</span></div>
+
+                <div class="flex flex-col gap-3">
+                    <button onclick="finishHunt()" class="w-full py-3 bg-[#00f3ff] text-black font-bold hover:bg-white hover:scale-105 transition-transform">COMPLETE HUNT</button>
+                    <button onclick="tacticalRetreat()" class="w-full py-2 bg-[#222] text-gray-300 border border-gray-700 hover:border-white hover:text-white text-xs font-bold flex items-center justify-center gap-2">
+                        <i data-lucide="flag" class="w-3 h-3"></i> TACTICAL RETREAT (LEARN)
+                    </button>
+                    <button onclick="cancelHunt()" class="text-xs text-gray-600 hover:text-red-500 mt-2">ABORT</button>
+                </div>
+            </div>
+
+            <div id="hunt-view-retreat" class="hidden text-left">
+                <div class="text-yellow-500 text-xs tracking-widest mb-2">TACTICAL RETREAT</div>
+                <h2 class="text-xl font-bold text-white mb-4">GRIMOIRE (STUDY MODE)</h2>
+                <p class="text-xs text-gray-400 mb-4">The Timer is paused. Study the concept. Enter the "Magic Spell" (Core Insight) below to re-engage.</p>
+                <textarea id="grimoire-notes" class="w-full h-32 bg-[#111] border border-gray-700 text-white p-3 text-xs font-mono focus:border-yellow-500 outline-none resize-none" placeholder="e.g. Use a monotonic stack to find the next greater element..."></textarea>
+                <button onclick="reEngage()" class="w-full mt-4 py-3 bg-yellow-500/20 border border-yellow-500 text-yellow-500 font-bold hover:bg-yellow-500 hover:text-black transition-colors">
+                    ⚔️ RE-ENGAGE BOSS
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analytics-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center" onclick="if(event.target.id === 'analytics-modal') document.getElementById('analytics-modal').classList.add('hidden')">
+        <div class="bg-[#0a0a0a] border border-gray-700 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-2">📊 DETAILED ANALYTICS</h3>
+            <div id="analytics-content" class="space-y-4">
+                <!-- Will be populated by showAnalytics() -->
+            </div>
+            <button onclick="document.getElementById('analytics-modal').classList.add('hidden')" class="w-full mt-4 py-2 bg-[#111] border border-gray-700 text-white text-xs font-bold hover:border-[#00f3ff]">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="report-modal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center" onclick="if(event.target.id === 'report-modal') document.getElementById('report-modal').classList.add('hidden')">
+        <div class="bg-[#0a0a0a] border border-gray-700 p-6 max-w-md w-full">
+            <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-2">HUNT REPORT</h3>
+            
+            <div id="dsa-report-inputs">
+                <div class="mb-4">
+                    <label class="text-xs text-gray-500 block mb-1">YOUR TIME COMPLEXITY</label>
+                    <select id="report-time" class="w-full bg-[#111] border border-gray-600 text-white p-2 text-sm focus:border-[#00f3ff] outline-none">
+                        <option value="O(1)">O(1)</option><option value="O(logN)">O(log N)</option><option value="O(N)">O(N)</option><option value="O(NlogN)">O(N log N)</option><option value="O(N^2)">O(N^2)</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="text-xs text-gray-500 block mb-1">YOUR SPACE COMPLEXITY</label>
+                    <select id="report-space" class="w-full bg-[#111] border border-gray-600 text-white p-2 text-sm focus:border-[#00f3ff] outline-none">
+                        <option value="O(1)">O(1)</option><option value="O(N)">O(N)</option><option value="O(N^2)">O(N^2)</option>
+                    </select>
+            </div>
+            </div>
+
+            <div id="ml-report-inputs" class="hidden">
+                 <div class="mb-6">
+                    <label class="text-xs text-gray-500 block mb-1">UNDERSTANDING DEPTH</label>
+                    <select id="report-understanding" class="w-full bg-[#111] border border-gray-600 text-white p-2 text-sm focus:border-[#bc13fe] outline-none">
+                        <option value="Surface">Surface Level</option>
+                        <option value="Deep">Deep Understanding</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="behavioral-report-inputs" class="hidden">
+                <div class="mb-6">
+                    <label class="text-xs text-gray-500 block mb-1">REFLECTION QUALITY</label>
+                    <select id="report-reflection" class="w-full bg-[#111] border border-gray-600 text-white p-2 text-sm focus:border-[#bc13fe] outline-none">
+                        <option value="Basic">Basic Reflection</option>
+                        <option value="Detailed">Detailed with Examples</option>
+                        <option value="STAR">STAR Format Complete</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="submitReport()" class="w-full py-3 bg-[#bc13fe] text-black font-bold hover:bg-white transition-colors">ABSORB SHADOW</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. QUEST DATABASE & CONSTANTS ---
+        const QUEST_DB = {};
+        
+        // Problem difficulty and metadata mapping
+        const PROBLEM_METADATA = {
+            // Two Pointers / Arrays (Easy -> Hard progression)
+            "Two Sum": { diff: 'E', time: 15, topic: 'arrays' },
+            "Valid Palindrome": { diff: 'E', time: 10, topic: 'arrays' },
+            "Best Time to Buy and Sell Stock": { diff: 'E', time: 15, topic: 'arrays' },
+            "Trapping Rain Water": { diff: 'H', time: 30, topic: 'arrays', shadow: 'Abyssal Sentinel', rank: 'S' },
+            
+            // Sliding Window (Progressive)
+            "Maximum Subarray": { diff: 'E', time: 15, topic: 'sliding' },
+            "Max Consecutive Ones III": { diff: 'M', time: 20, topic: 'sliding' },
+            "Minimum Window Substring": { diff: 'H', time: 30, topic: 'sliding' },
+            "Sliding Window Median": { diff: 'H', time: 35, topic: 'sliding' },
+            "Longest Continuous Subarray Limit": { diff: 'H', time: 30, topic: 'sliding' },
+            "Shortest Subarray Sum >= K": { diff: 'H', time: 35, topic: 'sliding' },
+            "Constrained Subsequence Sum": { diff: 'H', time: 35, topic: 'sliding' },
+            "Max Value of Equation": { diff: 'H', time: 30, topic: 'sliding' },
+            
+            // Binary Search (Progressive)
+            "First Missing Positive": { diff: 'H', time: 25, topic: 'binary' },
+            "Koko Eating Bananas": { diff: 'M', time: 20, topic: 'binary' },
+            "Capacity To Ship Packages": { diff: 'M', time: 25, topic: 'binary' },
+            "Split Array Largest Sum": { diff: 'H', time: 30, topic: 'binary' },
+            "Kth Smallest Element in Matrix": { diff: 'H', time: 30, topic: 'binary' },
+            "Median of Two Sorted Arrays": { diff: 'H', time: 40, topic: 'binary', shadow: 'Igris', rank: 'S' },
+            "Smallest Good Base": { diff: 'H', time: 35, topic: 'binary' },
+            "Min Number of Refueling Stops": { diff: 'H', time: 30, topic: 'binary' },
+            
+            // Linked List (Progressive)
+            "Reverse Linked List": { diff: 'E', time: 10, topic: 'arrays' },
+            "Linked List Random Node": { diff: 'M', time: 20, topic: 'design' },
+            "Merge K Sorted Lists": { diff: 'H', time: 25, topic: 'heap', shadow: 'Lich', rank: 'A' },
+            
+            // Tree/Graph BFS (Progressive)
+            "Invert Binary Tree": { diff: 'E', time: 10, topic: 'tree' },
+            "Number of Islands": { diff: 'M', time: 20, topic: 'graph' },
+            "Course Schedule II": { diff: 'M', time: 25, topic: 'graph' },
+            "Serialize Binary Tree": { diff: 'H', time: 30, topic: 'tree' },
+            "Word Ladder": { diff: 'H', time: 30, topic: 'graph' },
+            "Word Search": { diff: 'M', time: 25, topic: 'backtrack' },
+            "Word Search II": { diff: 'H', time: 35, topic: 'trie' },
+            "Word Break II": { diff: 'H', time: 30, topic: 'dp' },
+            "Alien Dictionary": { diff: 'H', time: 30, topic: 'graph', shadow: 'Beru', rank: 'S' },
+            "All Nodes Distance K": { diff: 'M', time: 25, topic: 'tree' },
+            "Bus Routes": { diff: 'H', time: 35, topic: 'graph' },
+            "Critical Connections": { diff: 'H', time: 35, topic: 'graph' },
+            
+            // Graph Advanced (Progressive)
+            "Open the Lock": { diff: 'M', time: 25, topic: 'graph' },
+            "Snakes and Ladders": { diff: 'M', time: 25, topic: 'graph' },
+            "Network Delay Time": { diff: 'M', time: 25, topic: 'graph' },
+            "Cheapest Flights K Stops": { diff: 'M', time: 30, topic: 'graph' },
+            "Path With Minimum Effort": { diff: 'M', time: 30, topic: 'graph' },
+            "Swim in Rising Water": { diff: 'H', time: 30, topic: 'graph' },
+            "Making A Large Island": { diff: 'H', time: 35, topic: 'graph' },
+            "Bricks Falling When Hit": { diff: 'H', time: 40, topic: 'graph' },
+            "Number of Islands II": { diff: 'H', time: 35, topic: 'graph' },
+            "Surrounded Regions": { diff: 'M', time: 20, topic: 'graph' },
+            "Shortest Path Visiting All Nodes": { diff: 'H', time: 35, topic: 'graph' },
+            "Reconstruct Itinerary": { diff: 'H', time: 30, topic: 'graph' },
+            "Cracking the Safe": { diff: 'H', time: 40, topic: 'graph' },
+            
+            // Dynamic Programming (Progressive)
+            "Climbing Stairs": { diff: 'E', time: 10, topic: 'dp' },
+            "House Robber": { diff: 'E', time: 15, topic: 'dp' },
+            "Edit Distance": { diff: 'M', time: 25, topic: 'dp' },
+            "Longest Increasing Subsequence": { diff: 'M', time: 25, topic: 'dp' },
+            "Regular Expression Matching": { diff: 'H', time: 35, topic: 'dp' },
+            "Wildcard Matching": { diff: 'H', time: 30, topic: 'dp' },
+            "Interleaving String": { diff: 'H', time: 30, topic: 'dp' },
+            "Distinct Subsequences": { diff: 'H', time: 30, topic: 'dp' },
+            "Scramble String": { diff: 'H', time: 35, topic: 'dp' },
+            "Partition to K Equal Sum Subsets": { diff: 'M', time: 30, topic: 'dp' },
+            "Sticker to Spell Word": { diff: 'H', time: 35, topic: 'dp' },
+            "Max Students Taking Exam": { diff: 'H', time: 40, topic: 'dp' },
+            "Can I Win": { diff: 'M', time: 30, topic: 'dp' },
+            "Minimum Work Sessions": { diff: 'H', time: 35, topic: 'dp' },
+            
+            // Heap/Priority Queue (Progressive)
+            "Task Scheduler": { diff: 'M', time: 25, topic: 'heap' },
+            "Meeting Rooms III": { diff: 'H', time: 35, topic: 'heap' },
+            "Employee Free Time": { diff: 'H', time: 35, topic: 'heap' },
+            "My Calendar III": { diff: 'H', time: 30, topic: 'design' },
+            
+            // Stack/Parsing (Progressive)
+            "Simplify Path": { diff: 'M', time: 20, topic: 'design' },
+            "Evaluate RPN": { diff: 'M', time: 20, topic: 'design' },
+            "Decode String": { diff: 'M', time: 20, topic: 'design' },
+            "Basic Calculator III": { diff: 'H', time: 35, topic: 'design' },
+            "Tag Validator": { diff: 'H', time: 35, topic: 'design' },
+            "Parse Lisp Expression": { diff: 'H', time: 40, topic: 'design' },
+            
+            // System Design Problems
+            "Design Hit Counter": { diff: 'M', time: 30, topic: 'design' },
+            "Design Twitter": { diff: 'M', time: 35, topic: 'design', shadow: 'Iron Fortress', rank: 'S' },
+            "Design Search Autocomplete": { diff: 'H', time: 40, topic: 'design' },
+            "Design In-Memory File System": { diff: 'H', time: 40, topic: 'design' },
+            "LFU Cache": { diff: 'H', time: 35, topic: 'design' },
+            "Snapshot Array": { diff: 'M', time: 30, topic: 'design' },
+            "Design Add and Search Words": { diff: 'M', time: 25, topic: 'trie' },
+            "Trie Implementation": { diff: 'M', time: 20, topic: 'trie' },
+            
+            // Advanced Mixed
+            "Robot Room Cleaner": { diff: 'H', time: 45, topic: 'design', shadow: 'Automaton', rank: 'S' },
+            "Web Crawler Multithreaded": { diff: 'H', time: 35, topic: 'design', shadow: 'Spider Queen', rank: 'S' },
+            "The Skyline Problem": { diff: 'H', time: 35, topic: 'heap', shadow: 'Kaisel', rank: 'S' },
+            "Count of Range Sum": { diff: 'H', time: 35, topic: 'binary', rank: 'S' },
+            "Rectangle Area II": { diff: 'H', time: 40, topic: 'design' },
+            "Perfect Rectangle": { diff: 'H', time: 35, topic: 'design' },
+            "Count of Smaller Numbers After Self": { diff: 'H', time: 30, topic: 'binary' },
+            "Range Sum Query - Mutable": { diff: 'M', time: 25, topic: 'design' },
+            "Reverse Pairs": { diff: 'H', time: 30, topic: 'binary' },
+            
+            // Backtracking (Progressive)
+            "Restore IP Addresses": { diff: 'M', time: 25, topic: 'backtrack' },
+            "Additive Number": { diff: 'M', time: 25, topic: 'backtrack' },
+            "Split Array into Fibonacci": { diff: 'M', time: 25, topic: 'backtrack' },
+            "N-Queens": { diff: 'H', time: 30, topic: 'backtrack' },
+            "Sudoku Solver": { diff: 'H', time: 35, topic: 'backtrack' },
+            "24 Game": { diff: 'H', time: 35, topic: 'backtrack' },
+            "Expression Add Operators": { diff: 'H', time: 35, topic: 'backtrack' },
+            "Unique Paths III": { diff: 'H', time: 30, topic: 'backtrack' },
+            
+            // String/Pattern Matching
+            "Text Justification": { diff: 'H', time: 30, topic: 'design' },
+            "Concatenated Words": { diff: 'H', time: 30, topic: 'trie' },
+            "Palindrome Pairs": { diff: 'H', time: 35, topic: 'trie' },
+            "Repeated DNA Sequences": { diff: 'M', time: 20, topic: 'design' },
+            "Longest Duplicate Substring": { diff: 'H', time: 35, topic: 'binary' },
+            "Distinct Echo Substrings": { diff: 'H', time: 35, topic: 'design' },
+            "Shortest Palindrome": { diff: 'H', time: 30, topic: 'design' },
+            "Check String Binary Codes": { diff: 'M', time: 20, topic: 'design' },
+            "Longest Common Subpath": { diff: 'H', time: 40, topic: 'binary' },
+            
+            // Randomization
+            "Random Pick Index": { diff: 'M', time: 20, topic: 'design' },
+            "Random Pick with Weight": { diff: 'M', time: 20, topic: 'design' },
+            "Generate Random Point in Circle": { diff: 'M', time: 20, topic: 'design' },
+            "Implement Rand10() Using Rand7()": { diff: 'M', time: 20, topic: 'design' },
+            "Shuffle an Array": { diff: 'M', time: 15, topic: 'design' },
+            "Random Point in Rectangles": { diff: 'M', time: 25, topic: 'design' },
+            "Insert Delete GetRandom O(1)": { diff: 'M', time: 25, topic: 'design' },
+            "Random Pick with Blacklist": { diff: 'H', time: 30, topic: 'design' },
+            
+            // Iterators
+            "Read N Characters Given Read4 II": { diff: 'H', time: 30, topic: 'design' },
+            "Flatten Nested List Iterator": { diff: 'M', time: 25, topic: 'design' },
+            "Peeking Iterator": { diff: 'M', time: 20, topic: 'design' },
+            
+            // Greedy
+            "Jump Game II": { diff: 'M', time: 20, topic: 'dp' },
+            "Partition Labels": { diff: 'M', time: 20, topic: 'arrays' },
+            "Gas Station": { diff: 'M', time: 25, topic: 'arrays' },
+            "Candy": { diff: 'H', time: 30, topic: 'arrays' },
+            "Create Maximum Number": { diff: 'H', time: 35, topic: 'arrays' },
+            
+            // Advanced Misc
+            "Guess the Word": { diff: 'H', time: 30, topic: 'design' },
+            "Max Number of Visible Points": { diff: 'H', time: 35, topic: 'binary' },
+            
+            // Union-Find / DSU
+            "Friend Circles": { diff: 'M', time: 25, topic: 'graph' },
+            "Accounts Merge": { diff: 'M', time: 30, topic: 'graph' },
+            "Redundant Connection II": { diff: 'H', time: 30, topic: 'graph' },
+            "Min Cost to Connect All Points": { diff: 'M', time: 30, topic: 'graph' },
+            "Shortest Path in Binary Matrix": { diff: 'M', time: 25, topic: 'graph' },
+            
+            // Advanced Graph
+            "Strongly Connected Components": { diff: 'H', time: 35, topic: 'graph' },
+            "Course Schedule": { diff: 'M', time: 25, topic: 'graph' },
+            "Find the City With Smallest Number of Neighbors": { diff: 'M', time: 30, topic: 'graph' },
+            "Network Flow Basics": { diff: 'H', time: 40, topic: 'graph' },
+            "Max Flow Min Cut": { diff: 'H', time: 45, topic: 'graph' },
+            "Minimum Cost to Make at Least One Path": { diff: 'H', time: 35, topic: 'graph' },
+            
+            // Advanced String Algorithms
+            "Implement strStr()": { diff: 'M', time: 25, topic: 'design', shadow: 'String Master', rank: 'A' },
+            "Repeated String Match": { diff: 'M', time: 25, topic: 'design' },
+            "Longest Palindromic Substring": { diff: 'M', time: 30, topic: 'design', shadow: 'Palindrome King', rank: 'A' },
+            
+            // Concurrency/Multithreading
+            "Print Zero Even Odd": { diff: 'M', time: 30, topic: 'design' },
+            "Fizz Buzz Multithreaded": { diff: 'M', time: 25, topic: 'design' },
+            "Design Bounded Blocking Queue": { diff: 'H', time: 35, topic: 'design', shadow: 'Thread Guardian', rank: 'S' },
+            "Print in Order": { diff: 'E', time: 20, topic: 'design' },
+            "Print FooBar Alternately": { diff: 'M', time: 25, topic: 'design' },
+            "Design Thread Pool": { diff: 'H', time: 40, topic: 'design', shadow: 'Pool Master', rank: 'S' },
+            "The Dining Philosophers": { diff: 'H', time: 35, topic: 'design' },
+            "Building H2O": { diff: 'M', time: 30, topic: 'design' },
+            "Traffic Light Controlled Intersection": { diff: 'M', time: 30, topic: 'design' },
+            
+            // DP on Trees
+            "House Robber III": { diff: 'M', time: 25, topic: 'tree' },
+            "Diameter of Binary Tree": { diff: 'E', time: 15, topic: 'tree' },
+            "Longest Univalue Path": { diff: 'M', time: 25, topic: 'tree' },
+            
+            // Advanced DP
+            "Maximum Profit in Job Scheduling": { diff: 'H', time: 35, topic: 'dp' },
+            "Maximum Number of Events That Can Be Attended": { diff: 'M', time: 30, topic: 'dp' },
+            "Burst Balloons": { diff: 'H', time: 35, topic: 'dp' },
+            
+            // Segment Trees / Advanced Data Structures
+            "Range Sum Query 2D - Mutable": { diff: 'H', time: 35, topic: 'design' },
+            "Range Sum Query 2D - Immutable": { diff: 'M', time: 25, topic: 'design' },
+            
+            // Advanced Binary Search
+            "Find Peak Element": { diff: 'M', time: 20, topic: 'binary' },
+            "Search in Rotated Sorted Array": { diff: 'M', time: 25, topic: 'binary' },
+            "Find Minimum in Rotated Sorted Array": { diff: 'M', time: 25, topic: 'binary' },
+            
+            // Advanced Backtracking
+            "Word Pattern II": { diff: 'H', time: 30, topic: 'backtrack' },
+            "Remove Invalid Parentheses": { diff: 'H', time: 35, topic: 'backtrack' },
+            "Generalized Abbreviation": { diff: 'M', time: 25, topic: 'backtrack' },
+            
+            // Math/Number Theory
+            "Count Primes": { diff: 'M', time: 25, topic: 'design' },
+            "Ugly Number II": { diff: 'M', time: 25, topic: 'dp' },
+            "Super Pow": { diff: 'M', time: 25, topic: 'design' },
+            "Pow(x, n)": { diff: 'M', time: 20, topic: 'design' },
+            "Divide Two Integers": { diff: 'M', time: 25, topic: 'design' },
+            "Sqrt(x)": { diff: 'E', time: 15, topic: 'binary' },
+            "Factorial Trailing Zeroes": { diff: 'E', time: 15, topic: 'design' },
+            
+            // Advanced Mixed
+            "Sliding Puzzle": { diff: 'H', time: 35, topic: 'graph' },
+            
+            // Behavioral placeholders
+            "(Review Behavioral Stories)": { diff: 'E', time: 60, topic: 'review' },
+            "(Review System Design Notes)": { diff: 'E', time: 60, topic: 'review' },
+            "(Review Resume)": { diff: 'E', time: 60, topic: 'review' },
+            "(Light Walk)": { diff: 'E', time: 60, topic: 'review' },
+            "(Travel/Logistics)": { diff: 'E', time: 60, topic: 'review' },
+            "(Sleep)": { diff: 'E', time: 60, topic: 'review' }
+        };
+        
+        const LEGENDARY_MAPPING = {
+            "Trapping Rain Water": { rank: 'S', limit: 25, type: 'Commander', shadow: 'Abyssal Sentinel' },
+            "Median of Two Sorted Arrays": { rank: 'S', limit: 40, type: 'Commander', shadow: 'Igris' },
+            "The Skyline Problem": { rank: 'S', limit: 35, type: 'Commander', shadow: 'Kaisel' },
+            "Alien Dictionary": { rank: 'S', limit: 30, type: 'Commander', shadow: 'Beru' },
+            "Word Ladder II": { rank: 'A', limit: 30, type: 'Assassin', shadow: 'Phantom' },
+            "Design Twitter": { rank: 'S', limit: 40, type: 'Tank', shadow: 'Iron Fortress' },
+            "Merge K Sorted Lists": { rank: 'A', limit: 25, type: 'Mage', shadow: 'Lich' },
+            "Robot Room Cleaner": { rank: 'S', limit: 45, type: 'Assassin', shadow: 'Automaton' },
+            "Web Crawler Multithreaded": { rank: 'S', limit: 35, type: 'Tank', shadow: 'Spider Queen' },
+            "Count of Range Sum": { rank: 'S', limit: 35, type: 'Mage' }
+        };
+
+        function getQuestData(title, context) {
+            if (context === 'BEHAVIORAL') return { rank: 'B', limit: 15, type: 'Rune', time: 'O(1)' };
+            if (context !== 'DSA') return { rank: 'B', limit: 60, type: context === 'ML' ? 'Construct' : 'Rune', time: 'O(1)' };
+            
+            const meta = PROBLEM_METADATA[title];
+            if (!meta) return { time: 'O(N)', space: 'O(N)', limit: 20, rank: 'B', type: 'Infantry' };
+            
+            let data = {
+                time: 'O(N)',
+                space: 'O(1)',
+                limit: meta.time || 20,
+                rank: meta.diff === 'H' ? 'A' : (meta.diff === 'M' ? 'B' : 'C'),
+                type: 'Infantry',
+                topic: meta.topic
+            };
+            
+            // Override with legendary data if exists
+            if (LEGENDARY_MAPPING[title]) {
+                const legendary = LEGENDARY_MAPPING[title];
+                data.rank = legendary.rank;
+                data.type = legendary.type;
+                data.shadow = legendary.shadow;
+            } else {
+                // Assign type based on topic
+                if (meta.topic === 'graph' || meta.topic === 'tree') data.type = 'Assassin';
+                else if (meta.topic === 'dp') data.type = 'Mage';
+                else if (meta.topic === 'design') data.type = 'Tank';
+                else if (meta.topic === 'heap' || meta.topic === 'binary') data.type = 'Mage';
+            }
+            
+            // Add shadow for special problems
+            if (meta.shadow) {
+                data.shadow = meta.shadow;
+                data.rank = meta.rank;
+            }
+            
+            return data;
+        }
+
+        // --- 2. PROGRESSIVE SCHEDULE DATA ---
+        const dsaSchedule = [
+            // Week 1: Foundation Building
+            { date: "Dec 08", day: "Sun", type: "ARRAYS", problems: [
+                "Two Sum", "Valid Palindrome", "Best Time to Buy and Sell Stock",
+                "Maximum Subarray", "Partition Labels", "Gas Station", "Candy",
+                "Trapping Rain Water", "Product of Array Except Self", "3Sum",
+                "Container With Most Water", "Longest Substring Without Repeating Characters",
+                "Merge Strings Alternately", "Find First and Last Position of Element"
+            ]},
+            { date: "Dec 09", day: "Mon", type: "LINKED_LIST", problems: [
+                "Reverse Linked List", "Linked List Random Node", "Merge K Sorted Lists",
+                "Merge Two Sorted Lists", "Add Two Numbers", "Remove Nth Node From End",
+                "Copy List with Random Pointer", "Linked List Cycle", "Reverse Nodes in k-Group"
+            ]},
+            { date: "Dec 10", day: "Tue", type: "TREE_BFS", problems: [
+                "Invert Binary Tree", "All Nodes Distance K", "Serialize Binary Tree",
+                "Binary Tree Maximum Path Sum", "Lowest Common Ancestor", "Validate Binary Search Tree",
+                "Construct Binary Tree from Preorder and Inorder", "Binary Tree Level Order Traversal",
+                "Binary Tree Zigzag Level Order Traversal", "Path Sum II"
+            ]},
+            { date: "Dec 11", day: "Wed", type: "GRAPH_BASICS", problems: [
+                "Number of Islands", "Surrounded Regions", "Course Schedule II", "Open the Lock",
+                "Clone Graph", "Pacific Atlantic Water Flow", "Evaluate Division",
+                "Find the Celebrity", "Graph Valid Tree", "Redundant Connection",
+                "Friend Circles", "Accounts Merge"
+            ]},
+            { date: "Dec 12", day: "Thu", type: "DP_INTRO", problems: [
+                "Climbing Stairs", "House Robber", "Edit Distance", "Longest Increasing Subsequence",
+                "House Robber II", "Decode Ways", "Coin Change", "Maximum Product Subarray",
+                "Maximum Points You Can Obtain from Cards", "Student Attendance Record II"
+            ]},
+            { date: "Dec 12", day: "Thu", type: "DP_TREES", problems: [
+                "House Robber III", "Binary Tree Maximum Path Sum", "Diameter of Binary Tree",
+                "Longest Univalue Path"
+            ]},
+            { date: "Dec 13", day: "Fri", type: "BINARY_SEARCH", problems: [
+                "Koko Eating Bananas", "Capacity To Ship Packages", "Split Array Largest Sum",
+                "Kth Smallest Element in Matrix", "Find Peak Element", "Search in Rotated Sorted Array",
+                "Find Minimum in Rotated Sorted Array"
+            ]},
+            { date: "Dec 14", day: "Sat", type: "RAID_SLIDING", problems: [
+                "Maximum Subarray", "Max Consecutive Ones III", "Minimum Window Substring",
+                "Sliding Window Median", "Longest Continuous Subarray Limit",
+                "Shortest Subarray Sum >= K", "Constrained Subsequence Sum", "Max Value of Equation"
+            ]},
+            
+            // Week 2: Pattern Mastery
+            { date: "Dec 15", day: "Sun", type: "RAID_DP", problems: [
+                "Regular Expression Matching", "Wildcard Matching", "Interleaving String",
+                "Distinct Subsequences", "Scramble String", "Word Break II",
+                "Partition to K Equal Sum Subsets", "Sticker to Spell Word",
+                "Max Students Taking Exam", "Can I Win", "Minimum Work Sessions",
+                "Maximum Profit in Job Scheduling", "Maximum Number of Events That Can Be Attended",
+                "Burst Balloons"
+            ]},
+            { date: "Dec 16", day: "Mon", type: "GRAPH_ADV", problems: [
+                "Snakes and Ladders", "Network Delay Time", "Cheapest Flights K Stops",
+                "Path With Minimum Effort", "Swim in Rising Water", "Shortest Path in Binary Matrix",
+                "Redundant Connection II", "Min Cost to Connect All Points"
+            ]},
+            { date: "Dec 17", day: "Tue", type: "GRAPH_HARD", problems: [
+                "Making A Large Island", "Bricks Falling When Hit", "Number of Islands II",
+                "Shortest Path Visiting All Nodes", "Critical Connections", "Strongly Connected Components",
+                "Course Schedule", "Find the City With Smallest Number of Neighbors"
+            ]},
+            { date: "Dec 18", day: "Wed", type: "GRAPH_EXPERT", problems: [
+                "Reconstruct Itinerary", "Cracking the Safe", "Bus Routes", "Alien Dictionary",
+                "Network Flow Basics", "Max Flow Min Cut", "Minimum Cost to Make at Least One Path"
+            ]},
+            { date: "Dec 19", day: "Thu", type: "HEAP", problems: [
+                "Task Scheduler", "Meeting Rooms III", "Employee Free Time",
+                "My Calendar III", "The Skyline Problem"
+            ]},
+            { date: "Dec 19", day: "Thu", type: "SEGMENT_TREE", problems: [
+                "Range Sum Query - Mutable", "Range Sum Query 2D - Mutable",
+                "Count of Range Sum", "Reverse Pairs", "Count of Smaller Numbers After Self"
+            ]},
+            { date: "Dec 20", day: "Fri", type: "STACK_PARSE", problems: [
+                "Simplify Path", "Evaluate RPN", "Decode String",
+                "Basic Calculator III", "Tag Validator", "Parse Lisp Expression"
+            ]},
+            { date: "Dec 21", day: "Sat", type: "RAID_BACKTRACK", problems: [
+                "Word Search", "Restore IP Addresses", "Additive Number",
+                "Split Array into Fibonacci", "N-Queens", "Sudoku Solver",
+                "24 Game", "Expression Add Operators", "Unique Paths III",
+                "Word Pattern II", "Remove Invalid Parentheses", "Generalized Abbreviation"
+            ]},
+            
+            // Week 3: Advanced Topics
+            { date: "Dec 22", day: "Sun", type: "RAID_BINARY", problems: [
+                "First Missing Positive", "Min Number of Refueling Stops",
+                "Median of Two Sorted Arrays", "Smallest Good Base",
+                "Count of Smaller Numbers After Self", "Reverse Pairs",
+                "Count of Range Sum", "Max Number of Visible Points",
+                "Range Sum Query 2D - Mutable", "Range Sum Query 2D - Immutable"
+            ]},
+            { date: "Dec 23", day: "Mon", type: "TRIE", problems: [
+                "Trie Implementation", "Design Add and Search Words",
+                "Word Search II", "Concatenated Words", "Palindrome Pairs"
+            ]},
+            { date: "Dec 24", day: "Tue", type: "DESIGN", problems: [
+                "Design Hit Counter", "Design Twitter", "Design Search Autocomplete",
+                "Design In-Memory File System", "LFU Cache", "Snapshot Array"
+            ]},
+            { date: "Dec 25", day: "Wed", type: "DESIGN_ADV", problems: [
+                "Range Sum Query - Mutable", "Rectangle Area II", "Perfect Rectangle",
+                "Robot Room Cleaner", "Web Crawler Multithreaded"
+            ]},
+            { date: "Dec 25", day: "Wed", type: "CONCURRENCY_BASICS", problems: [
+                "Print Zero Even Odd", "Fizz Buzz Multithreaded", "Design Bounded Blocking Queue",
+                "Print in Order", "Print FooBar Alternately"
+            ]},
+            { date: "Dec 26", day: "Thu", type: "STRING", problems: [
+                "Text Justification", "Repeated DNA Sequences", "Longest Duplicate Substring",
+                "Distinct Echo Substrings", "Shortest Palindrome", "Check String Binary Codes",
+                "Longest Common Subpath", "Implement strStr()", "Repeated String Match",
+                "Longest Palindromic Substring"
+            ]},
+            { date: "Dec 27", day: "Fri", type: "RANDOM", problems: [
+                "Random Pick Index", "Random Pick with Weight", "Generate Random Point in Circle",
+                "Implement Rand10() Using Rand7()", "Shuffle an Array", "Random Point in Rectangles",
+                "Insert Delete GetRandom O(1)", "Random Pick with Blacklist"
+            ]},
+            { date: "Dec 27", day: "Fri", type: "MATH_NUMBER", problems: [
+                "Count Primes", "Ugly Number II", "Super Pow", "Pow(x, n)",
+                "Divide Two Integers", "Sqrt(x)", "Factorial Trailing Zeroes"
+            ]},
+            { date: "Dec 28", day: "Sat", type: "RAID_MIXED", problems: [
+                "Read N Characters Given Read4 II", "Flatten Nested List Iterator", "Peeking Iterator",
+                "Jump Game II", "Create Maximum Number", "Guess the Word",
+                "Word Ladder", "Sliding Puzzle", "Design Thread Pool"
+            ]},
+            { date: "Dec 28", day: "Sat", type: "CONCURRENCY_ADV", problems: [
+                "Design Thread Pool", "The Dining Philosophers", "Building H2O",
+                "Traffic Light Controlled Intersection"
+            ]},
+            
+            // Week 4: Mock & Taper
+            { date: "Dec 29", day: "Sun", type: "MOCK", problems: [
+                "Trapping Rain Water", "Alien Dictionary", "The Skyline Problem"
+            ]},
+            { date: "Dec 30", day: "Mon", type: "MOCK", problems: [
+                "Median of Two Sorted Arrays", "Design Twitter", "Robot Room Cleaner"
+            ]},
+            { date: "Dec 31", day: "Tue", type: "MOCK", problems: [
+                "Word Search II", "Basic Calculator III", "Meeting Rooms III"
+            ]},
+            { date: "Jan 01", day: "Wed", type: "MOCK", problems: [
+                "Shortest Subarray Sum >= K", "Number of Islands II", "LFU Cache"
+            ]},
+            { date: "Jan 02", day: "Thu", type: "TAPER", problems: [
+                "Two Sum", "Best Time to Buy and Sell Stock", "Maximum Subarray"
+            ]},
+            { date: "Jan 03", day: "Fri", type: "TAPER", problems: [
+                "Climbing Stairs", "House Robber", "Reverse Linked List", "Invert Binary Tree"
+            ]},
+            { date: "Jan 04", day: "Sat", type: "REST", problems: [
+                "(Review Behavioral Stories)", "(Review System Design Notes)", "(Review Resume)", "(Light Walk)"
+            ]},
+            { date: "Jan 05", day: "Sun", type: "FINAL", problems: [
+                "(Travel/Logistics)", "(Sleep)"
+            ]}
+        ];
+
+        const mlSchedule = [
+            { 
+                date: "Day 1-2", 
+                type: "CORE", 
+                topic: "Linear Regression",
+                problems: [
+                    "Linear Regression (OLS)",
+                    "Subtopics: Probabilistic Interpretation (Why MLE == OLS under Gaussian Noise)",
+                    "Subtopics: Assumptions (LINE: Linearity, Independence, Normality, Homoscedasticity)",
+                    "Subtopics: The Gauss-Markov Theorem (BLUE)",
+                    "Subtopics: Closed Form: Normal Equation (Derivation & Matrix Calculus)",
+                    "Subtopics: Iterative: Gradient Descent (Batch vs. Stochastic vs. Mini-batch)",
+                    "Subtopics: Convexity: Why the Error Surface is a bowl (Hessian PSD)",
+                    "Subtopics: Goodness of Fit: R^2 vs Adjusted R^2",
+                    "Subtopics: Error Metrics: MSE vs RMSE vs MAE",
+                    "Subtopics: Residual Analysis: Detecting Heteroscedasticity and Non-Linearity"
+                ]
+            },
+            { 
+                date: "Day 3-4", 
+                type: "CORE",
+                topic: "Logistic Regression & Regularization",
+                problems: [
+                    "Logistic Regression (MLE)",
+                    "Subtopics: MLE Derivation for Logistic Regression",
+                    "Subtopics: Sigmoid Function Properties",
+                    "Subtopics: Ridge (L2): Lagrangian Derivation & Handling Multicollinearity",
+                    "Subtopics: Lasso (L1): Feature Selection & Sparsity (Diamond vs Circle)",
+                    "Subtopics: Elastic Net: The Hybrid approach",
+                    "Subtopics: Complexity Analysis: O(n^3) vs O(kn)",
+                    "Subtopics: Numerical Stability: Condition Numbers",
+                    "Subtopics: Data nuances: Wide vs Tall data constraints"
+                ]
+            },
+            { 
+                date: "Day 5-6", 
+                type: "CORE",
+                topic: "Bias-Variance & SVM",
+                problems: [
+                    "Bias-Variance Tradeoff",
+                    "Subtopics: Mathematical Proof of Bias-Variance Decomposition",
+                    "Subtopics: Overfitting vs Underfitting",
+                    "Subtopics: Cross-Validation Strategies",
+                    "SVM & Kernels (Primal/Dual)",
+                    "Subtopics: Primal to Dual Lagrange Transformation",
+                    "Subtopics: Kernel Trick Mathematics",
+                    "Subtopics: RBF, Polynomial, Linear Kernels",
+                    "Subtopics: Support Vectors and Margin"
+                ]
+            },
+            { 
+                date: "Day 7-8", 
+                type: "CORE",
+                topic: "Decision Trees & Ensembles",
+                problems: [
+                    "Decision Trees (Info Gain)",
+                    "Subtopics: Information Gain Calculation",
+                    "Subtopics: Gini Impurity vs Entropy",
+                    "Subtopics: Pruning Strategies",
+                    "Ensembles (GBM/Boosting)",
+                    "Subtopics: Boosting Math (AdaBoost, Gradient Boosting)",
+                    "Subtopics: XGBoost vs LightGBM vs CatBoost",
+                    "Subtopics: Random Forest vs GBM",
+                    "Subtopics: Stacking and Blending"
+                ]
+            },
+            { 
+                date: "Day 9-10", 
+                type: "CORE",
+                topic: "Clustering & Dimensionality Reduction",
+                problems: [
+                    "K-Means & EM",
+                    "Subtopics: Expectation Maximization Algorithm",
+                    "Subtopics: K-Means Convergence Proof",
+                    "Subtopics: Initialization Strategies (K-Means++)",
+                    "Subtopics: Gaussian Mixture Models",
+                    "PCA & SVD (Eigenvectors)",
+                    "Subtopics: Eigenvector Proof for PCA",
+                    "Subtopics: Variance Maximization Derivation",
+                    "Subtopics: SVD vs PCA Relationship",
+                    "Subtopics: Choosing Number of Components"
+                ]
+            },
+            { 
+                date: "Day 11-12", 
+                type: "DL",
+                topic: "Neural Networks",
+                problems: [
+                    "Neural Net Backprop",
+                    "Subtopics: Backpropagation Calculus (Chain Rule)",
+                    "Subtopics: Activation Functions (ReLU, Sigmoid, Tanh)",
+                    "Subtopics: Vanishing/Exploding Gradients",
+                    "Subtopics: Batch Normalization Mathematics",
+                    "Subtopics: Dropout Regularization",
+                    "Word2Vec Embeddings",
+                    "Subtopics: Skip-gram vs CBOW",
+                    "Subtopics: Negative Sampling Mathematics",
+                    "Subtopics: Embedding Space Properties"
+                ]
+            },
+            { 
+                date: "Day 13-14", 
+                type: "LLM",
+                topic: "Transformers & LLMs",
+                problems: [
+                    "Transformer Attention Code",
+                    "Subtopics: Scaled Dot-Product Attention Mathematics",
+                    "Subtopics: Multi-Head Attention Mechanism",
+                    "Subtopics: Positional Encoding Mathematics",
+                    "Decoder Architecture",
+                    "Subtopics: Autoregressive Generation",
+                    "Subtopics: KV Cache Optimization",
+                    "Subtopics: Rotary Position Embedding (RoPE)",
+                    "Subtopics: Layer Normalization vs Batch Norm"
+                ]
+            },
+            { 
+                date: "Day 15-16", 
+                type: "SYS",
+                topic: "RAG & Ranking",
+                problems: [
+                    "RAG (HNSW)",
+                    "Subtopics: Hierarchical Navigable Small World Algorithm",
+                    "Subtopics: Approximate Nearest Neighbor Search",
+                    "Subtopics: Vector Similarity Metrics (Cosine, Euclidean)",
+                    "Ranking (LTR Pairwise Loss)",
+                    "Subtopics: Pairwise Loss Derivation",
+                    "Subtopics: Learning to Rank Algorithms",
+                    "Subtopics: NDCG and MAP Metrics"
+                ]
+            },
+            { 
+                date: "Day 17-18", 
+                type: "SYS",
+                topic: "Fine-Tuning & Vector DBs",
+                problems: [
+                    "LoRA Fine-Tuning",
+                    "Subtopics: Low-Rank Adaptation Mathematics",
+                    "Subtopics: Parameter-Efficient Fine-Tuning",
+                    "Subtopics: QLoRA and Quantization",
+                    "Vector DB Indexing",
+                    "Subtopics: Indexing Trade-offs (HNSW vs IVF)",
+                    "Subtopics: Approximate Search vs Exact Search",
+                    "Subtopics: Sharding Strategies"
+                ]
+            },
+            { 
+                date: "Day 19-20", 
+                type: "SYS",
+                topic: "Recommendation Systems",
+                problems: [
+                    "Two-Tower Recs",
+                    "Subtopics: Dot Product Space Mathematics",
+                    "Subtopics: Negative Sampling for Recommendations",
+                    "Subtopics: Cold Start Problem",
+                    "Online Learning",
+                    "Subtopics: Real-time Updates",
+                    "Subtopics: Incremental Learning",
+                    "Subtopics: Concept Drift Detection"
+                ]
+            },
+            { 
+                date: "Day 21-22", 
+                type: "OPS",
+                topic: "ML Operations",
+                problems: [
+                    "Data Drift (KL Div)",
+                    "Subtopics: KL Divergence Code Implementation",
+                    "Subtopics: Population Stability Index (PSI)",
+                    "Subtopics: Feature Drift Detection",
+                    "Model Serving Throughput",
+                    "Subtopics: Throughput Mathematics",
+                    "Subtopics: Batching Strategies",
+                    "Subtopics: Model Quantization"
+                ]
+            },
+            { 
+                date: "Day 23-24", 
+                type: "PROJ",
+                topic: "Project Defense",
+                problems: [
+                    "Resume Deep Dive: Project A",
+                    "Subtopics: System Architecture Deep Dive",
+                    "Subtopics: Metrics and Impact Quantification",
+                    "Subtopics: Technical Challenges and Solutions",
+                    "Resume Deep Dive: Project B",
+                    "Subtopics: ML Model Details",
+                    "Subtopics: A/B Testing Results",
+                    "Subtopics: Scalability Considerations"
+                ]
+            },
+            { 
+                date: "Day 25-26", 
+                type: "MOCK",
+                topic: "Design Interviews",
+                problems: [
+                    "Design: Ad Click Prediction",
+                    "Subtopics: Feature Engineering",
+                    "Subtopics: Model Selection",
+                    "Subtopics: Real-time Serving Architecture",
+                    "Design: Search Ranking",
+                    "Subtopics: Ranking Algorithm Design",
+                    "Subtopics: Personalization",
+                    "Subtopics: Evaluation Framework"
+                ]
+            },
+            // ============ NLP CODING FOCUS (Google MLE Specific) ============
+            { 
+                date: "NLP Day 1", 
+                type: "NLP_CODE",
+                topic: "Text Preprocessing & Tokenization",
+                problems: [
+                    "CODE: Implement Tokenizer from Scratch",
+                    "Subtopics: Whitespace vs Regex vs Rule-based Tokenization",
+                    "Subtopics: Handling Contractions, Punctuation, Numbers",
+                    "CODE: Implement BPE (Byte Pair Encoding)",
+                    "Subtopics: BPE Merge Rules Algorithm",
+                    "Subtopics: Vocabulary Size vs OOV Trade-off",
+                    "Subtopics: WordPiece vs SentencePiece vs Unigram",
+                    "CODE: Text Normalization Pipeline",
+                    "Subtopics: Unicode Normalization (NFC, NFD)",
+                    "Subtopics: Lowercasing, Stemming, Lemmatization Trade-offs"
+                ]
+            },
+            { 
+                date: "NLP Day 2", 
+                type: "NLP_CODE",
+                topic: "Classical NLP Representations",
+                problems: [
+                    "CODE: Implement TF-IDF from Scratch",
+                    "Subtopics: TF Variants (Raw, Log, Boolean)",
+                    "Subtopics: IDF Smoothing Techniques",
+                    "Subtopics: Sparse Matrix Representation",
+                    "CODE: Implement N-gram Language Model",
+                    "Subtopics: MLE Estimation for N-grams",
+                    "Subtopics: Smoothing: Laplace, Kneser-Ney, Stupid Backoff",
+                    "Subtopics: Perplexity Calculation",
+                    "CODE: Implement Cosine Similarity Search",
+                    "Subtopics: Efficient Dot Product for Sparse Vectors"
+                ]
+            },
+            { 
+                date: "NLP Day 3", 
+                type: "NLP_CODE",
+                topic: "Word Embeddings Implementation",
+                problems: [
+                    "CODE: Implement Word2Vec Skip-gram",
+                    "Subtopics: Softmax vs Negative Sampling Loss",
+                    "Subtopics: Context Window Sampling",
+                    "Subtopics: Subsampling Frequent Words",
+                    "CODE: Implement GloVe Loss Function",
+                    "Subtopics: Co-occurrence Matrix Construction",
+                    "Subtopics: Weighting Function Design",
+                    "CODE: Embedding Arithmetic & Analogies",
+                    "Subtopics: king - man + woman = queen Implementation",
+                    "Subtopics: Nearest Neighbor Search in Embedding Space"
+                ]
+            },
+            { 
+                date: "NLP Day 4", 
+                type: "NLP_CODE",
+                topic: "RNN & Sequence Models",
+                problems: [
+                    "CODE: Implement Vanilla RNN Cell",
+                    "Subtopics: Forward Pass: h_t = tanh(W_hh * h + W_xh * x)",
+                    "Subtopics: BPTT (Backprop Through Time) Derivation",
+                    "Subtopics: Gradient Clipping Implementation",
+                    "CODE: Implement LSTM Cell from Scratch",
+                    "Subtopics: Forget/Input/Output Gate Mathematics",
+                    "Subtopics: Cell State vs Hidden State",
+                    "Subtopics: Peephole Connections",
+                    "CODE: Implement GRU Cell",
+                    "Subtopics: Reset and Update Gates",
+                    "Subtopics: LSTM vs GRU Parameter Count"
+                ]
+            },
+            { 
+                date: "NLP Day 5", 
+                type: "NLP_CODE",
+                topic: "Attention Mechanisms",
+                problems: [
+                    "CODE: Implement Bahdanau Attention (Additive)",
+                    "Subtopics: Alignment Score: v^T * tanh(W_1*h + W_2*s)",
+                    "Subtopics: Context Vector Computation",
+                    "CODE: Implement Luong Attention (Multiplicative)",
+                    "Subtopics: Dot vs General vs Concat Scoring",
+                    "CODE: Implement Scaled Dot-Product Attention",
+                    "Subtopics: Why Scale by sqrt(d_k)?",
+                    "Subtopics: Attention Mask Implementation",
+                    "CODE: Implement Multi-Head Attention",
+                    "Subtopics: Parallel Heads & Concatenation",
+                    "Subtopics: Projection Matrices W_Q, W_K, W_V"
+                ]
+            },
+            { 
+                date: "NLP Day 6", 
+                type: "NLP_CODE",
+                topic: "Transformer Components",
+                problems: [
+                    "CODE: Implement Positional Encoding",
+                    "Subtopics: Sinusoidal PE: sin(pos/10000^(2i/d))",
+                    "Subtopics: Learned vs Fixed Positional Embeddings",
+                    "CODE: Implement Transformer Encoder Block",
+                    "Subtopics: Pre-LN vs Post-LN Architecture",
+                    "Subtopics: Residual Connections",
+                    "CODE: Implement Transformer Decoder Block",
+                    "Subtopics: Causal Masking Implementation",
+                    "Subtopics: Cross-Attention vs Self-Attention",
+                    "CODE: Implement Layer Normalization",
+                    "Subtopics: LayerNorm vs BatchNorm in NLP"
+                ]
+            },
+            { 
+                date: "NLP Day 7", 
+                type: "NLP_CODE",
+                topic: "Sequence Labeling & NER",
+                problems: [
+                    "CODE: Implement Viterbi Algorithm for HMM",
+                    "Subtopics: Transition & Emission Probabilities",
+                    "Subtopics: Dynamic Programming for Best Path",
+                    "CODE: Implement CRF Layer for Sequence Labeling",
+                    "Subtopics: CRF Loss: Log-Partition Function",
+                    "Subtopics: Forward Algorithm for Normalization",
+                    "CODE: Implement BIO/BILOU Tagging Scheme",
+                    "Subtopics: Handling Nested Entities",
+                    "Subtopics: Span Extraction from Tags"
+                ]
+            },
+            { 
+                date: "NLP Day 8", 
+                type: "NLP_CODE",
+                topic: "Text Classification",
+                problems: [
+                    "CODE: Implement Text CNN (Kim 2014)",
+                    "Subtopics: Multiple Filter Sizes (3,4,5)",
+                    "Subtopics: Max-over-time Pooling",
+                    "CODE: Implement Hierarchical Attention Network",
+                    "Subtopics: Word-level & Sentence-level Attention",
+                    "CODE: Implement Focal Loss for Imbalanced Text",
+                    "Subtopics: Class Weighting Strategies",
+                    "CODE: Multi-label Text Classification",
+                    "Subtopics: Sigmoid vs Softmax for Multi-label",
+                    "Subtopics: Threshold Tuning"
+                ]
+            },
+            { 
+                date: "NLP Day 9", 
+                type: "NLP_CODE",
+                topic: "Decoding Strategies",
+                problems: [
+                    "CODE: Implement Greedy Decoding",
+                    "Subtopics: Argmax at Each Step",
+                    "CODE: Implement Beam Search",
+                    "Subtopics: Beam Width & Length Normalization",
+                    "Subtopics: Early Stopping Conditions",
+                    "CODE: Implement Nucleus (Top-p) Sampling",
+                    "Subtopics: Temperature Scaling",
+                    "Subtopics: Top-k vs Top-p Comparison",
+                    "CODE: Implement Constrained Decoding",
+                    "Subtopics: Prefix-Constrained Generation",
+                    "Subtopics: JSON Schema Enforcement"
+                ]
+            },
+            { 
+                date: "NLP Day 10", 
+                type: "NLP_CODE",
+                topic: "Evaluation & Metrics",
+                problems: [
+                    "CODE: Implement BLEU Score from Scratch",
+                    "Subtopics: N-gram Precision Calculation",
+                    "Subtopics: Brevity Penalty",
+                    "CODE: Implement ROUGE Score",
+                    "Subtopics: ROUGE-1, ROUGE-2, ROUGE-L",
+                    "Subtopics: Recall vs F1 Variants",
+                    "CODE: Implement Perplexity Calculation",
+                    "Subtopics: Cross-Entropy to Perplexity",
+                    "CODE: Implement BERTScore",
+                    "Subtopics: Contextual Embedding Similarity"
+                ]
+            },
+            { 
+                date: "NLP Day 11", 
+                type: "NLP_CODE",
+                topic: "Advanced NLP Problems",
+                problems: [
+                    "CODE: Implement Span Extraction for QA",
+                    "Subtopics: Start/End Logit Prediction",
+                    "Subtopics: Handling No-Answer Cases",
+                    "CODE: Implement Sentence Similarity (SBERT)",
+                    "Subtopics: Mean Pooling vs CLS Token",
+                    "Subtopics: Contrastive Loss for Similarity",
+                    "CODE: Implement Document Retrieval with BM25",
+                    "Subtopics: BM25 Scoring Formula",
+                    "Subtopics: tf-saturation Parameter Tuning",
+                    "CODE: Implement Semantic Search Pipeline"
+                ]
+            },
+            { 
+                date: "NLP Day 12", 
+                type: "NLP_CODE",
+                topic: "LLM Internals & Efficiency",
+                problems: [
+                    "CODE: Implement KV Cache for Inference",
+                    "Subtopics: Memory vs Compute Trade-off",
+                    "Subtopics: Cache Invalidation Strategies",
+                    "CODE: Implement RoPE (Rotary Position Embedding)",
+                    "Subtopics: Complex Number Rotation Math",
+                    "Subtopics: Relative Position Advantage",
+                    "CODE: Implement Flash Attention Concept",
+                    "Subtopics: Block-wise Attention Computation",
+                    "Subtopics: Memory-Efficient Backward Pass",
+                    "CODE: Implement Gradient Checkpointing",
+                    "Subtopics: Recomputation vs Memory Trade-off"
+                ]
+            }
+        ];
+
+        const mathSchedule = [
+            { 
+                date: "Week 1", 
+                type: "STATS",
+                topic: "Probability & Statistics",
+                problems: [
+                    "Probability Distributions",
+                    "Subtopics: Gaussian (Normal) Distribution Properties",
+                    "Subtopics: Poisson Distribution Derivation",
+                    "Subtopics: Bernoulli and Binomial",
+                    "Subtopics: Exponential and Gamma",
+                    "Bayes Theorem (Posterior)",
+                    "Subtopics: Posterior Calculation Step-by-Step",
+                    "Subtopics: Prior Selection",
+                    "Subtopics: Conjugate Priors",
+                    "Expectation & Variance",
+                    "Subtopics: Linearity of Expectation Proof",
+                    "Subtopics: Variance Properties",
+                    "Subtopics: Covariance and Correlation",
+                    "Subtopics: Law of Large Numbers",
+                    "Subtopics: Central Limit Theorem"
+                ]
+            },
+            { 
+                date: "Week 2", 
+                type: "CALC",
+                topic: "Matrix Calculus",
+                problems: [
+                    "Matrix Calculus",
+                    "Subtopics: Gradients of Vector-Valued Functions",
+                    "Subtopics: Jacobian Matrix",
+                    "Subtopics: Hessian Matrix",
+                    "Subtopics: Chain Rule for Matrices",
+                    "Subtopics: Matrix Derivatives (d/dX of trace, det, etc.)",
+                    "Lagrange Multipliers",
+                    "Subtopics: Constrained Optimization",
+                    "Subtopics: KKT Conditions",
+                    "Subtopics: Dual Problem Derivation"
+                ]
+            },
+            { 
+                date: "Week 2", 
+                type: "LIN_ALG",
+                topic: "Linear Algebra",
+                problems: [
+                    "Eigenvalues & Eigenvectors",
+                    "Subtopics: PCA Variance Proof",
+                    "Subtopics: Eigendecomposition",
+                    "Subtopics: Spectral Theorem",
+                    "SVD (Singular Value Decomposition)",
+                    "Subtopics: SVD Derivation",
+                    "Subtopics: Relationship to PCA",
+                    "Subtopics: Low-Rank Approximation",
+                    "Positive Definite Matrices",
+                    "Subtopics: Convexity Proof",
+                    "Subtopics: Cholesky Decomposition"
+                ]
+            },
+            { 
+                date: "Week 3", 
+                type: "INFO",
+                topic: "Information Theory",
+                problems: [
+                    "Entropy (Shannon)",
+                    "Subtopics: Entropy Derivation",
+                    "Subtopics: Maximum Entropy Principle",
+                    "Subtopics: Conditional Entropy",
+                    "KL Divergence (Relative Entropy)",
+                    "Subtopics: KL Divergence Properties",
+                    "Subtopics: Asymmetry Proof",
+                    "Subtopics: Relationship to Log-Likelihood",
+                    "Cross-Entropy Loss Derivation",
+                    "Subtopics: Connection to KL Divergence",
+                    "Subtopics: Why Cross-Entropy for Classification"
+                ]
+            },
+            { 
+                date: "Week 3", 
+                type: "EST",
+                topic: "Estimation Theory",
+                problems: [
+                    "MLE (Maximum Likelihood Estimation)",
+                    "Subtopics: MLE Derivation",
+                    "Subtopics: Fisher Information",
+                    "Subtopics: Cramer-Rao Lower Bound",
+                    "MLE vs MAP",
+                    "Subtopics: Prior Difference",
+                    "Subtopics: When to Use Each",
+                    "Subtopics: Bayesian vs Frequentist"
+                ]
+            },
+            { 
+                date: "Week 4", 
+                type: "OPT",
+                topic: "Optimization",
+                problems: [
+                    "Gradient Descent (Taylor Series)",
+                    "Subtopics: Taylor Series Proof",
+                    "Subtopics: Convergence Conditions",
+                    "Subtopics: Learning Rate Selection",
+                    "Subtopics: Momentum and Adam",
+                    "Convex Optimization",
+                    "Subtopics: Convexity Definitions",
+                    "Subtopics: Strong vs Weak Convexity",
+                    "Subtopics: Global Minimum Guarantee"
+                ]
+            },
+            { 
+                date: "Week 4", 
+                type: "TEST",
+                topic: "A/B Testing",
+                problems: [
+                    "A/B Testing (Power Analysis)",
+                    "Subtopics: Statistical Power Calculation",
+                    "Subtopics: P-values and Significance",
+                    "Subtopics: Type I and Type II Errors",
+                    "Subtopics: Sample Size Determination",
+                    "Subtopics: Multiple Testing Correction",
+                    "Subtopics: Sequential Testing"
+                ]
+            },
+            { 
+                date: "Week 4", 
+                type: "TRANS",
+                topic: "Transformer Math",
+                problems: [
+                    "Positional Encoding Math",
+                    "Subtopics: Sinusoidal Encoding Derivation",
+                    "Subtopics: Frequency Analysis",
+                    "Subtopics: Relative Position Encoding",
+                    "Attention Mechanism Math",
+                    "Subtopics: Scaled Dot-Product Attention",
+                    "Subtopics: Why Scaling by sqrt(d_k)",
+                    "Subtopics: Multi-Head Attention"
+                ]
+            }
+        ];
+
+        // Behavioral/Googleyness Questions (Daily until Jan 4)
+        const behavioralSchedule = [
+            { date: "Dec 08", day: "Sun", type: "GOOGLEYNESS", problems: ["Tell me about a time when you had to work with a difficult team member"] },
+            { date: "Dec 09", day: "Mon", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to make a decision with incomplete information"] },
+            { date: "Dec 10", day: "Tue", type: "GOOGLEYNESS", problems: ["Tell me about a time you failed and what you learned from it"] },
+            { date: "Dec 11", day: "Wed", type: "GOOGLEYNESS", problems: ["Describe a project where you had to learn a new technology quickly"] },
+            { date: "Dec 12", day: "Thu", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to prioritize multiple competing deadlines"] },
+            { date: "Dec 13", day: "Fri", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to convince someone to adopt your idea"] },
+            { date: "Dec 14", day: "Sat", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to deal with ambiguity"] },
+            { date: "Dec 15", day: "Sun", type: "GOOGLEYNESS", problems: ["Describe a challenging technical problem you solved"] },
+            { date: "Dec 16", day: "Mon", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to work under pressure"] },
+            { date: "Dec 17", day: "Tue", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to give difficult feedback"] },
+            { date: "Dec 18", day: "Wed", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to adapt to a major change"] },
+            { date: "Dec 19", day: "Thu", type: "GOOGLEYNESS", problems: ["Describe a project where you had to collaborate across teams"] },
+            { date: "Dec 20", day: "Fri", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to make a trade-off between quality and speed"] },
+            { date: "Dec 21", day: "Sat", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to handle a conflict"] },
+            { date: "Dec 22", day: "Sun", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to mentor someone"] },
+            { date: "Dec 23", day: "Mon", type: "GOOGLEYNESS", problems: ["Describe a time you had to scale a system or process"] },
+            { date: "Dec 24", day: "Tue", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to work with limited resources"] },
+            { date: "Dec 25", day: "Wed", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to make a decision that affected many people"] },
+            { date: "Dec 26", day: "Thu", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to learn from a mistake"] },
+            { date: "Dec 27", day: "Fri", type: "GOOGLEYNESS", problems: ["Describe a project where you had to balance technical debt"] },
+            { date: "Dec 28", day: "Sat", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to influence without authority"] },
+            { date: "Dec 29", day: "Sun", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to handle a production incident"] },
+            { date: "Dec 30", day: "Mon", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to work with stakeholders with different priorities"] },
+            { date: "Dec 31", day: "Tue", type: "GOOGLEYNESS", problems: ["Describe a time you had to optimize a system for performance"] },
+            { date: "Jan 01", day: "Wed", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to design a system from scratch"] },
+            { date: "Jan 02", day: "Thu", type: "GOOGLEYNESS", problems: ["Describe a situation where you had to handle a difficult customer or user"] },
+            { date: "Jan 03", day: "Fri", type: "GOOGLEYNESS", problems: ["Tell me about a time you had to work on something outside your comfort zone"] },
+            { date: "Jan 04", day: "Sat", type: "GOOGLEYNESS", problems: ["Describe your biggest achievement and what made it challenging"] }
+        ];
+
+        // --- 3. STATE MANAGEMENT WITH INDEXEDDB ---
+        const STORAGE_KEY = 'shadow_v4_main';
+        const DB_NAME = 'ShadowMonarchDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'gameState';
+        
+        let db = null;
+        let useIndexedDB = false;
+        let state = {
+            stats: { str: 10, int: 10, spd: 10 },
+            legions: { 'Infantry': 0, 'Mage': 0, 'Assassin': 0, 'Tank': 0, 'Commander': 0, 'Construct': 0, 'Rune': 0 },
+            unlockedShadows: [], completed: {}, xp: 0,
+            saveSlots: [null, null, null],
+            dailyActivity: {}
+        };
+        
+        // IndexedDB Storage Manager
+        const StorageManager = {
+            async init() {
+                try {
+                    if (!('indexedDB' in window)) {
+                        console.log('IndexedDB not supported, using localStorage');
+                        document.getElementById('storage-status').textContent = 'Using localStorage (IndexedDB not available)';
+                        this.loadFromLocalStorage();
+                        return;
+                    }
+                    
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    
+                    request.onerror = () => {
+                        console.error('IndexedDB error:', request.error);
+                        document.getElementById('storage-status').textContent = 'Using localStorage (Fallback)';
+                        this.loadFromLocalStorage();
+                    };
+                    
+                    request.onsuccess = () => {
+                        db = request.result;
+                        useIndexedDB = true;
+                        console.log('IndexedDB initialized');
+                        document.getElementById('storage-status').textContent = 'Using IndexedDB (Large Capacity)';
+                        this.loadFromIndexedDB();
+                    };
+                    
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            db.createObjectStore(STORE_NAME);
+                        }
+                    };
+                } catch (e) {
+                    console.error('Storage init error:', e);
+                    this.loadFromLocalStorage();
+                }
+            },
+            
+            async loadFromIndexedDB() {
+                if (!db) return;
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get('main');
+                    
+                    request.onsuccess = async () => {
+                        if (request.result) {
+                            state = request.result;
+                            console.log('Loaded from IndexedDB');
+                        } else {
+                            // Migrate from localStorage if exists
+                            await this.migrateFromLocalStorage();
+                        }
+                        initUI();
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Load error, falling back to localStorage');
+                        this.loadFromLocalStorage();
+                    };
+                } catch (e) {
+                    console.error('IndexedDB load error:', e);
+                    this.loadFromLocalStorage();
+                }
+            },
+            
+            loadFromLocalStorage() {
+                try {
+                    const rawState = localStorage.getItem(STORAGE_KEY);
+                    if (rawState) {
+                        const parsed = JSON.parse(rawState);
+                        if (parsed && parsed.saveSlots) {
+                            state = parsed;
+                            console.log('Loaded from localStorage');
+                        }
+                    }
+                } catch (e) {
+                    console.error('localStorage load error:', e);
+                }
+                initUI();
+            },
+            
+            async migrateFromLocalStorage() {
+                try {
+                    const rawState = localStorage.getItem(STORAGE_KEY);
+                    if (rawState) {
+                        const parsed = JSON.parse(rawState);
+                        if (parsed && parsed.saveSlots) {
+                            state = parsed;
+                            await this.saveToIndexedDB();
+                            console.log('Migrated from localStorage to IndexedDB');
+                            // Keep localStorage as backup
+                        }
+                    }
+                } catch (e) {
+                    console.error('Migration error:', e);
+                }
+            },
+            
+            async saveToIndexedDB() {
+                if (!db || !useIndexedDB) return false;
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    await store.put(state, 'main');
+                    return true;
+                } catch (e) {
+                    console.error('IndexedDB save error:', e);
+                    return false;
+                }
+            },
+            
+            saveToLocalStorage() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                    return true;
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        return false;
+                    }
+                    console.error('localStorage save error:', e);
+                    return false;
+                }
+            },
+            
+            async save() {
+                // Try IndexedDB first
+                if (useIndexedDB && db) {
+                    const success = await this.saveToIndexedDB();
+                    if (success) {
+                        showSaveIndicator();
+                        return;
+                    }
+                }
+                
+                // Fallback to localStorage
+                const success = this.saveToLocalStorage();
+                if (!success) {
+                    handleQuotaExceeded();
+                } else {
+                    showSaveIndicator();
+                }
+            },
+            
+            async reset() {
+                if (useIndexedDB && db) {
+                    try {
+                        const transaction = db.transaction([STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        await store.delete('main');
+                    } catch (e) {
+                        console.error('IndexedDB reset error:', e);
+                    }
+                }
+                localStorage.removeItem(STORAGE_KEY);
+            }
+        };
+
+        let currentContext = 'DSA';
+        let activeHunt = null;
+        let huntInterval = null;
+        let huntStartTime = null;
+        let isRetreating = false;
+        let retreatStartTime = null;
+
+        // --- 4. ENGINE LOGIC ---
+        async function init() {
+            await StorageManager.init();
+            // init() is called from StorageManager after data is loaded
+        }
+        
+        function initUI() {
+            renderSchedule();
+            updateStats();
+            renderArmy();
+            renderSaveSlots();
+            updateAnalytics();
+            updateWeakAreas();
+            updateRevisionQueue();
+            updateRecommendations();
+            startCountdown();
+            checkLegacyUnlock();
+            // FIX: Initialize Icons safely
+            if (window.lucide) {
+                lucide.createIcons();
+            } else {
+                window.onload = function() {
+                    if(window.lucide) lucide.createIcons();
+                }
+            }
+        }
+
+        function switchContext(ctx) {
+            currentContext = ctx;
+            ['dsa', 'ml', 'math', 'behavioral'].forEach(c => {
+                const btn = document.getElementById(`btn-${c}`);
+                if (c.toUpperCase() === ctx) { btn.classList.add('active-tab', 'text-black'); btn.classList.remove('text-gray-400'); } 
+                else { btn.classList.remove('active-tab', 'text-black'); btn.classList.add('text-gray-400'); }
+            });
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('quest-container');
+            container.innerHTML = '';
+            let data = currentContext === 'ML' ? mlSchedule : 
+                       (currentContext === 'MATH' ? mathSchedule : 
+                       (currentContext === 'BEHAVIORAL' ? behavioralSchedule : dsaSchedule));
+
+            data.forEach((day) => {
+                const isRaid = day.type.includes('RAID');
+                const isMock = day.type === 'MOCK';
+                const isBoss = day.type === 'BOSS' || isMock;
+                
+                const border = isRaid || isBoss ? 'border-[#ff2a2a]' : 'border-[#1a1a1a]';
+                const bg = isBoss ? 'bg-red-900/10' : (isRaid ? 'bg-purple-900/10' : 'bg-[#0c0c0c]');
+                
+                let typeLabel = day.type.replace(/_/g, ' ');
+                if (day.type.includes('GRAPH')) typeLabel = '🗺️ ' + typeLabel;
+                else if (day.type.includes('DP')) typeLabel = '💎 ' + typeLabel;
+                else if (day.type.includes('TREE')) typeLabel = '🌳 ' + typeLabel;
+                else if (day.type.includes('BINARY')) typeLabel = '🔍 ' + typeLabel;
+                else if (day.type.includes('SLIDING')) typeLabel = '🪟 ' + typeLabel;
+                else if (day.type.includes('HEAP')) typeLabel = '⛰️ ' + typeLabel;
+                else if (day.type.includes('DESIGN')) typeLabel = '🏗️ ' + typeLabel;
+                else if (day.type.includes('BACKTRACK')) typeLabel = '♟️ ' + typeLabel;
+                else if (day.type.includes('CONCURRENCY')) typeLabel = '⚡ ' + typeLabel;
+                else if (day.type.includes('SEGMENT')) typeLabel = '📊 ' + typeLabel;
+                else if (day.type.includes('MATH')) typeLabel = '🔢 ' + typeLabel;
+                else if (day.type.includes('GOOGLEYNESS')) typeLabel = '💭 ' + typeLabel;
+                else if (isRaid) typeLabel = '⚔️ RAID: ' + typeLabel.replace('RAID_', '');
+                else if (isMock) typeLabel = '🎯 MOCK INTERVIEW';
+                
+                let html = `<div class="panel p-5 rounded-sm ${border} ${bg} mb-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <span class="text-xs font-bold text-gray-500">${day.date}</span>
+                            <span class="text-xs font-bold text-gray-600 ml-2">${typeLabel}</span>
+                        </div>
+                        ${isRaid ? '<span class="text-purple-400 font-black animate-pulse text-xs">⚔️ RAID DAY</span>' : ''}
+                        ${isBoss ? '<span class="text-red-500 font-black animate-pulse text-xs">⚠ CRITICAL</span>' : ''}
+                    </div>
+                    <div class="space-y-2">`;
+                
+                day.problems.forEach(p => {
+                    const pid = generateId(currentContext, p);
+                    const isDone = state.completed[pid];
+                    const meta = getQuestData(p, currentContext);
+                    const isSubtopic = p.startsWith('Subtopics:');
+                    
+                    // Add difficulty indicator
+                    const diffColor = meta.rank === 'S' ? 'text-red-500' : 
+                                     meta.rank === 'A' ? 'text-orange-500' :
+                                     meta.rank === 'B' ? 'text-yellow-500' : 'text-green-500';
+                    const diffLabel = meta.rank === 'S' ? 'LEGENDARY' :
+                                     meta.rank === 'A' ? 'HARD' :
+                                     meta.rank === 'B' ? 'MEDIUM' : 'EASY';
+                    
+                    // Generate LeetCode link for DSA problems
+                    let leetcodeLink = '';
+                    if (currentContext === 'DSA' && !isSubtopic && !p.startsWith('(')) {
+                        const slug = p.toLowerCase()
+                            .replace(/[^a-z0-9\s]/g, '')
+                            .replace(/\s+/g, '-')
+                            .replace(/^-+|-+$/g, '');
+                        if (slug) {
+                            leetcodeLink = ` <a href="https://leetcode.com/problems/${slug}/" target="_blank" class="text-[#00f3ff] hover:text-white text-[9px] ml-2" title="Open on LeetCode" onclick="event.stopPropagation()">🔗</a>`;
+                        }
+                    }
+                    
+                    const btnState = isDone 
+                        ? `<span class="text-[#00f3ff] text-xs font-bold">CLEARED ${isDone.retreat ? '(RETREAT)' : ''}</span>` 
+                        : isSubtopic 
+                        ? `<span class="text-gray-600 text-[9px]">STUDY</span>`
+                        : currentContext === 'BEHAVIORAL'
+                        ? `<button onclick="startHunt('${escapeHtml(p)}', '${currentContext}')" class="px-3 py-1 bg-[#111] hover:bg-[#bc13fe] hover:text-white border border-gray-700 text-[10px] rounded transition-colors font-bold">💭 REFLECT</button>`
+                        : `<button onclick="startHunt('${escapeHtml(p)}', '${currentContext}')" class="px-3 py-1 bg-[#111] hover:bg-[#00f3ff] hover:text-black border border-gray-700 text-[10px] rounded transition-colors font-bold">▶ START HUNT</button>`;
+                    
+                    html += `<div class="flex justify-between items-center p-2 hover:bg-[#111] rounded border border-transparent hover:border-gray-800 transition-colors ${isSubtopic ? 'ml-4 opacity-75' : ''}" 
+                        data-problem="${escapeHtml(p)}" 
+                        data-difficulty="${meta.rank}" 
+                        data-completed="${isDone ? 'true' : 'false'}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full ${isDone ? 'bg-[#00f3ff]' : 'bg-gray-700'}"></div>
+                            <span class="${isDone ? 'text-gray-500 line-through' : isSubtopic ? 'text-gray-400 italic' : 'text-gray-300'} font-mono text-xs md:text-sm">${escapeHtml(p)}</span>
+                            ${!isSubtopic && currentContext !== 'BEHAVIORAL' ? `<span class="${diffColor} text-[10px] font-bold">[${diffLabel}]</span>` : ''}
+                            ${leetcodeLink}
+                        </div>
+                        <div>${btnState}</div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+            // FIX: Re-run icon replacement after DOM updates
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // --- HUNTING & RETREAT (FIXED TIMER) ---
+        function startHunt(title, context) {
+            // Prevent multiple hunts
+            if (activeHunt) {
+                if (!confirm('Hunt already active. Cancel current hunt?')) return;
+                cancelHunt();
+            }
+            
+            const meta = getQuestData(title, context);
+            activeHunt = { title, context, meta, retreat: false, notes: "" };
+            huntStartTime = Date.now();
+            isRetreating = false;
+            retreatStartTime = null;
+            
+            document.getElementById('hunt-title').innerText = title;
+            document.getElementById('hunt-target').innerText = `TARGET: ${meta.limit}:00`;
+            
+            // Add LeetCode link for DSA problems
+            const leetcodeLinkEl = document.getElementById('hunt-leetcode-link');
+            if (context === 'DSA' && !title.startsWith('(') && !title.startsWith('Subtopics:')) {
+                const slug = title.toLowerCase()
+                    .replace(/[^a-z0-9\s]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                if (slug) {
+                    leetcodeLinkEl.innerHTML = `<a href="https://leetcode.com/problems/${slug}/" target="_blank" class="text-[#00f3ff] hover:text-white text-xs underline flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Open on LeetCode</a>`;
+                    if (window.lucide) lucide.createIcons();
+                } else {
+                    leetcodeLinkEl.innerHTML = '';
+                }
+            } else {
+                leetcodeLinkEl.innerHTML = '';
+            }
+            
+            document.getElementById('hunt-view-active').classList.remove('hidden');
+            document.getElementById('hunt-view-retreat').classList.add('hidden');
+            document.getElementById('grimoire-notes').value = "";
+            document.getElementById('hunt-modal').classList.remove('hidden');
+            document.getElementById('hunt-timer').classList.remove('text-red-500');
+            
+            if (huntInterval) clearInterval(huntInterval);
+            huntInterval = setInterval(() => {
+                if(!isRetreating) {
+                const elapsed = Math.floor((Date.now() - huntStartTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('hunt-timer').innerText = `${m}:${s}`;
+                    
+                    if (Math.floor(elapsed / 60) > meta.limit) {
+                        document.getElementById('hunt-timer').classList.add('text-red-500');
+                    }
+                }
+            }, 1000); // Update every second
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function tacticalRetreat() {
+            isRetreating = true;
+            retreatStartTime = Date.now();
+            activeHunt.retreat = true;
+            document.getElementById('hunt-view-active').classList.add('hidden');
+            document.getElementById('hunt-view-retreat').classList.remove('hidden');
+        }
+
+        function reEngage() {
+            const notes = document.getElementById('grimoire-notes').value;
+            if (notes.length < 5) { alert("Inscribe the rune properly (Enter notes)."); return; }
+            activeHunt.notes = notes;
+            isRetreating = false;
+            
+            // Reset timer for the execution phase
+            huntStartTime = Date.now();
+            document.getElementById('hunt-timer').classList.remove('text-red-500');
+            document.getElementById('hunt-view-active').classList.remove('hidden');
+            document.getElementById('hunt-view-retreat').classList.add('hidden');
+        }
+
+        function cancelHunt() { 
+            if (huntInterval) {
+                clearInterval(huntInterval);
+                huntInterval = null;
+            }
+            document.getElementById('hunt-modal').classList.add('hidden'); 
+            activeHunt = null; 
+        }
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('hunt-modal').classList.contains('hidden')) {
+                    cancelHunt();
+                } else if (!document.getElementById('report-modal').classList.contains('hidden')) {
+                    document.getElementById('report-modal').classList.add('hidden');
+                }
+            }
+        });
+
+        function finishHunt() {
+            clearInterval(huntInterval);
+            document.getElementById('hunt-modal').classList.add('hidden');
+            document.getElementById('report-modal').classList.remove('hidden');
+            if (activeHunt.context === 'DSA') { 
+                document.getElementById('dsa-report-inputs').classList.remove('hidden'); 
+                document.getElementById('ml-report-inputs').classList.add('hidden');
+                document.getElementById('behavioral-report-inputs').classList.add('hidden');
+            } else if (activeHunt.context === 'BEHAVIORAL') {
+                document.getElementById('dsa-report-inputs').classList.add('hidden'); 
+                document.getElementById('ml-report-inputs').classList.add('hidden');
+                document.getElementById('behavioral-report-inputs').classList.remove('hidden');
+            } else { 
+                document.getElementById('dsa-report-inputs').classList.add('hidden'); 
+                document.getElementById('ml-report-inputs').classList.remove('hidden');
+                document.getElementById('behavioral-report-inputs').classList.add('hidden');
+            }
+        }
+
+        async function submitReport() {
+            const pid = generateId(activeHunt.context, activeHunt.title);
+            let intGain = 0, spdGain = 0, strGain = 1;
+
+            if (activeHunt.context === 'DSA') {
+                const userTime = document.getElementById('report-time')?.value || '';
+                const elapsed = Math.floor((Date.now() - huntStartTime) / 1000);
+                const timeTakenMin = Math.ceil(elapsed / 60);
+                
+                // Normalize time complexity strings for comparison
+                const normalizeComplexity = (str) => str.replace(/\s+/g, '').toUpperCase();
+                if (userTime && normalizeComplexity(userTime) === normalizeComplexity(activeHunt.meta.time || 'O(N)')) {
+                    intGain += 2;
+                }
+                if (timeTakenMin <= activeHunt.meta.limit / 2) spdGain += 3;
+                else if (timeTakenMin <= activeHunt.meta.limit) spdGain += 1;
+                else spdGain -= 1;
+                
+                if (activeHunt.meta.rank === 'A') strGain = 3;
+                if (activeHunt.meta.rank === 'S') strGain = 5;
+            } else if (activeHunt.context === 'BEHAVIORAL') {
+                const reflection = document.getElementById('report-reflection')?.value || 'Basic';
+                if (reflection === 'STAR') intGain += 5;
+                else if (reflection === 'Detailed') intGain += 3;
+                else intGain += 1;
+                strGain = 1;
+            } else {
+                const understanding = document.getElementById('report-understanding')?.value || 'Surface';
+                if (understanding === 'Deep') intGain += 5; 
+                else intGain += 2;
+                strGain = 2;
+            }
+
+            // Penalty for Retreat
+            if (activeHunt.retreat) { intGain += 3; spdGain = 0; }
+
+            if (activeHunt.context !== 'BEHAVIORAL') {
+                state.legions[activeHunt.meta.type]++;
+            }
+            if (activeHunt.meta.shadow && !activeHunt.retreat) { 
+                if (!state.unlockedShadows.find(s => s.name === activeHunt.meta.shadow)) {
+                    state.unlockedShadows.push({ 
+                        name: activeHunt.meta.shadow, 
+                        rank: activeHunt.meta.rank, 
+                        origin: activeHunt.title 
+                    });
+                    alert(`ARISEN: ${activeHunt.meta.shadow} (Rank ${activeHunt.meta.rank})`);
+                }
+            }
+
+            state.stats.str += strGain; 
+            state.stats.int = Math.max(0, state.stats.int + intGain); 
+            state.stats.spd = Math.max(0, state.stats.spd + spdGain);
+            // Get complexities for DSA problems
+            let timeComplexity = '', spaceComplexity = '';
+            if (activeHunt.context === 'DSA') {
+                const timeEl = document.getElementById('report-time');
+                const spaceEl = document.getElementById('report-space');
+                timeComplexity = timeEl ? timeEl.value : '';
+                spaceComplexity = spaceEl ? spaceEl.value : '';
+            }
+            
+            // Calculate time taken
+            const elapsed = Math.floor((Date.now() - huntStartTime) / 1000);
+            const timeTakenMinutes = Math.ceil(elapsed / 60);
+            
+            state.completed[pid] = { 
+                completed: true, 
+                retreat: activeHunt.retreat, 
+                notes: activeHunt.notes,
+                timestamp: Date.now(),
+                dateSolved: new Date().toLocaleDateString(),
+                timeComplexity: timeComplexity,
+                spaceComplexity: spaceComplexity,
+                context: activeHunt.context,
+                timeTaken: timeTakenMinutes,
+                lastReviewed: Date.now(),
+                reviewCount: 0
+            };
+            state.xp += (strGain + intGain + Math.max(0, spdGain)) * 10;
+            
+            // Track daily activity
+            trackDailyActivity();
+            
+            // Auto-Save to Slot 0
+            state.saveSlots[0] = { date: new Date().toLocaleString(), data: JSON.stringify(state) };
+            
+            await save();
+            document.getElementById('report-modal').classList.add('hidden');
+            initUI();
+        }
+
+        // --- ANALYTICS & INSIGHTS ---
+        function updateAnalytics() {
+            // Calculate overall progress
+            const allSchedules = [...dsaSchedule, ...mlSchedule, ...mathSchedule, ...behavioralSchedule];
+            let totalProblems = 0;
+            let completedProblems = 0;
+            
+            allSchedules.forEach(day => {
+                day.problems.forEach(p => {
+                    if (!p.startsWith('Subtopics:') && !p.startsWith('(')) {
+                        totalProblems++;
+                        const pid = generateId(day.type.includes('GOOGLEYNESS') ? 'BEHAVIORAL' : 
+                                              (day.type.includes('CORE') || day.type.includes('DL') || day.type.includes('LLM') || day.type.includes('SYS') || day.type.includes('OPS') || day.type.includes('PROJ') || day.type.includes('MOCK') ? 'ML' :
+                                              (day.type.includes('STATS') || day.type.includes('CALC') || day.type.includes('LIN_ALG') || day.type.includes('INFO') || day.type.includes('EST') || day.type.includes('OPT') || day.type.includes('TEST') || day.type.includes('TRANS') ? 'MATH' : 'DSA')), p);
+                        if (state.completed[pid]) completedProblems++;
+                    }
+                });
+            });
+            
+            const progressPercent = totalProblems > 0 ? Math.round((completedProblems / totalProblems) * 100) : 0;
+            document.getElementById('overall-progress').textContent = `${progressPercent}%`;
+            document.getElementById('overall-progress-bar').style.width = `${progressPercent}%`;
+            
+            // Calculate streak
+            const streak = calculateStreak();
+            document.getElementById('streak-count').textContent = `${streak} days`;
+            
+            // Calculate today's count
+            const today = new Date().toDateString();
+            const todayCount = Object.values(state.completed).filter(c => {
+                const solvedDate = c.timestamp ? new Date(c.timestamp).toDateString() : null;
+                return solvedDate === today;
+            }).length;
+            document.getElementById('today-count').textContent = todayCount;
+        }
+        
+        function calculateStreak() {
+            const completedDates = Object.values(state.completed)
+                .map(c => c.timestamp ? new Date(c.timestamp).toDateString() : null)
+                .filter(d => d)
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => new Date(b) - new Date(a));
+            
+            if (completedDates.length === 0) return 0;
+            
+            let streak = 0;
+            const today = new Date().toDateString();
+            let checkDate = new Date(today);
+            
+            // Check if today has any completions
+            if (!completedDates.includes(today)) {
+                checkDate = new Date(today);
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            while (completedDates.includes(checkDate.toDateString())) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            return streak;
+        }
+        
+        function updateWeakAreas() {
+            const container = document.getElementById('weak-areas-container');
+            const topicStats = {};
+            
+            // Analyze DSA problems by topic
+            Object.entries(state.completed).forEach(([id, data]) => {
+                if (id.startsWith('DSA_')) {
+                    const problemName = id.replace('DSA_', '').replace(/_/g, ' ');
+                    const meta = PROBLEM_METADATA[problemName];
+                    if (meta && meta.topic) {
+                        if (!topicStats[meta.topic]) {
+                            topicStats[meta.topic] = { total: 0, completed: 0 };
+                        }
+                        topicStats[meta.topic].total++;
+                        topicStats[meta.topic].completed++;
+                    }
+                }
+            });
+            
+            // Count total problems per topic
+            Object.values(PROBLEM_METADATA).forEach(meta => {
+                if (meta.topic && meta.topic !== 'review') {
+                    if (!topicStats[meta.topic]) {
+                        topicStats[meta.topic] = { total: 0, completed: 0 };
+                    }
+                    topicStats[meta.topic].total++;
+                }
+            });
+            
+            // Find weak areas (completion < 50%)
+            const weakAreas = Object.entries(topicStats)
+                .filter(([topic, stats]) => stats.total > 0 && (stats.completed / stats.total) < 0.5)
+                .sort((a, b) => (a[1].completed / a[1].total) - (b[1].completed / b[1].total))
+                .slice(0, 5);
+            
+            if (weakAreas.length === 0) {
+                container.innerHTML = '<div class="text-center py-2 text-green-400">No weak areas! 🎉</div>';
+            } else {
+                let html = '';
+                weakAreas.forEach(([topic, stats]) => {
+                    const percent = Math.round((stats.completed / stats.total) * 100);
+                    html += `<div class="mb-2">
+                        <div class="flex justify-between text-[10px] mb-1">
+                            <span class="text-gray-300">${topic.toUpperCase()}</span>
+                            <span class="text-red-400">${percent}%</span>
+                        </div>
+                        <div class="w-full bg-[#111] h-1 rounded">
+                            <div class="bg-red-500 h-1 rounded" style="width: ${percent}%"></div>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            }
+        }
+        
+        function showAnalytics() {
+            const modal = document.getElementById('analytics-modal');
+            const content = document.getElementById('analytics-content');
+            
+            // Calculate detailed stats
+            const allSchedules = [...dsaSchedule, ...mlSchedule, ...mathSchedule, ...behavioralSchedule];
+            const contextStats = { DSA: { total: 0, completed: 0 }, ML: { total: 0, completed: 0 }, MATH: { total: 0, completed: 0 }, BEHAVIORAL: { total: 0, completed: 0 } };
+            const difficultyStats = { S: 0, A: 0, B: 0, C: 0 };
+            const timeStats = { total: 0, count: 0, avg: 0 };
+            const recentProblems = [];
+            
+            allSchedules.forEach(day => {
+                const context = day.type.includes('GOOGLEYNESS') ? 'BEHAVIORAL' : 
+                              (day.type.includes('CORE') || day.type.includes('DL') || day.type.includes('LLM') || day.type.includes('SYS') || day.type.includes('OPS') || day.type.includes('PROJ') || day.type.includes('MOCK') ? 'ML' :
+                              (day.type.includes('STATS') || day.type.includes('CALC') || day.type.includes('LIN_ALG') || day.type.includes('INFO') || day.type.includes('EST') || day.type.includes('OPT') || day.type.includes('TEST') || day.type.includes('TRANS') ? 'MATH' : 'DSA'));
+                
+                day.problems.forEach(p => {
+                    if (!p.startsWith('Subtopics:') && !p.startsWith('(')) {
+                        contextStats[context].total++;
+                        const pid = generateId(context, p);
+                        if (state.completed[pid]) {
+                            contextStats[context].completed++;
+                            const meta = PROBLEM_METADATA[p];
+                            if (meta) {
+                                if (meta.rank) difficultyStats[meta.rank]++;
+                                else if (meta.diff === 'H') difficultyStats['A']++;
+                                else if (meta.diff === 'M') difficultyStats['B']++;
+                                else difficultyStats['C']++;
+                            }
+                            if (state.completed[pid].timestamp) {
+                                recentProblems.push({
+                                    name: p,
+                                    date: new Date(state.completed[pid].timestamp).toLocaleDateString(),
+                                    context: context
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+            
+            recentProblems.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = `
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-[#111] p-3 rounded border border-gray-800">
+                        <div class="text-xs text-gray-400 mb-1">DSA Progress</div>
+                        <div class="text-lg font-bold text-[#00f3ff]">${contextStats.DSA.completed}/${contextStats.DSA.total}</div>
+                        <div class="text-[10px] text-gray-500">${contextStats.DSA.total > 0 ? Math.round((contextStats.DSA.completed / contextStats.DSA.total) * 100) : 0}%</div>
+                    </div>
+                    <div class="bg-[#111] p-3 rounded border border-gray-800">
+                        <div class="text-xs text-gray-400 mb-1">ML Progress</div>
+                        <div class="text-lg font-bold text-[#bc13fe]">${contextStats.ML.completed}/${contextStats.ML.total}</div>
+                        <div class="text-[10px] text-gray-500">${contextStats.ML.total > 0 ? Math.round((contextStats.ML.completed / contextStats.ML.total) * 100) : 0}%</div>
+                    </div>
+                    <div class="bg-[#111] p-3 rounded border border-gray-800">
+                        <div class="text-xs text-gray-400 mb-1">Math Progress</div>
+                        <div class="text-lg font-bold text-yellow-400">${contextStats.MATH.completed}/${contextStats.MATH.total}</div>
+                        <div class="text-[10px] text-gray-500">${contextStats.MATH.total > 0 ? Math.round((contextStats.MATH.completed / contextStats.MATH.total) * 100) : 0}%</div>
+                    </div>
+                    <div class="bg-[#111] p-3 rounded border border-gray-800">
+                        <div class="text-xs text-gray-400 mb-1">Behavioral</div>
+                        <div class="text-lg font-bold text-green-400">${contextStats.BEHAVIORAL.completed}/${contextStats.BEHAVIORAL.total}</div>
+                        <div class="text-[10px] text-gray-500">${contextStats.BEHAVIORAL.total > 0 ? Math.round((contextStats.BEHAVIORAL.completed / contextStats.BEHAVIORAL.total) * 100) : 0}%</div>
+                    </div>
+                </div>
+                <div class="bg-[#111] p-3 rounded border border-gray-800 mb-4">
+                    <div class="text-xs text-gray-400 mb-2">Difficulty Breakdown</div>
+                    <div class="space-y-1 text-[10px]">
+                        <div class="flex justify-between"><span class="text-red-400">Legendary (S):</span><span>${difficultyStats.S}</span></div>
+                        <div class="flex justify-between"><span class="text-orange-400">Hard (A):</span><span>${difficultyStats.A}</span></div>
+                        <div class="flex justify-between"><span class="text-yellow-400">Medium (B):</span><span>${difficultyStats.B}</span></div>
+                        <div class="flex justify-between"><span class="text-green-400">Easy (C):</span><span>${difficultyStats.C}</span></div>
+                    </div>
+                </div>
+                <div class="bg-[#111] p-3 rounded border border-gray-800">
+                    <div class="text-xs text-gray-400 mb-2">Recent Completions (Last 10)</div>
+                    <div class="space-y-1 text-[10px] max-h-40 overflow-y-auto">
+                        ${recentProblems.slice(0, 10).map(p => 
+                            `<div class="flex justify-between text-gray-300">
+                                <span>${escapeHtml(p.name)}</span>
+                                <span class="text-gray-500">${p.date}</span>
+                            </div>`
+                        ).join('') || '<div class="text-gray-500">No completions yet</div>'}
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.classList.remove('hidden');
+        }
+        
+        // --- SEARCH & FILTER ---
+        let originalScheduleHTML = '';
+        
+        function filterProblems() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const difficultyFilter = document.getElementById('filter-difficulty').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            
+            if (!searchTerm && !difficultyFilter && !statusFilter) {
+                renderSchedule();
+                return;
+            }
+            
+            const container = document.getElementById('quest-container');
+            const allProblems = container.querySelectorAll('[data-problem]');
+            
+            allProblems.forEach(problemEl => {
+                const problemText = problemEl.textContent.toLowerCase();
+                const problemData = problemEl.getAttribute('data-problem');
+                const difficulty = problemEl.getAttribute('data-difficulty') || '';
+                const isCompleted = problemEl.getAttribute('data-completed') === 'true';
+                
+                let show = true;
+                
+                if (searchTerm && !problemText.includes(searchTerm)) {
+                    show = false;
+                }
+                
+                if (difficultyFilter && difficulty !== difficultyFilter) {
+                    show = false;
+                }
+                
+                if (statusFilter === 'completed' && !isCompleted) {
+                    show = false;
+                } else if (statusFilter === 'pending' && isCompleted) {
+                    show = false;
+                }
+                
+                problemEl.style.display = show ? '' : 'none';
+            });
+        }
+        
+        // --- REVISION SYSTEM (Spaced Repetition) ---
+        function updateRevisionQueue() {
+            const container = document.getElementById('revision-container');
+            if (!container) return;
+            const now = Date.now();
+            const revisionQueue = [];
+            
+            // Spaced repetition: Review after 1 day, 3 days, 7 days, 14 days
+            const intervals = [1, 3, 7, 14]; // days
+            
+            Object.entries(state.completed).forEach(([id, data]) => {
+                if (data.timestamp && data.context === 'DSA') {
+                    const daysSinceSolved = Math.floor((now - data.timestamp) / (1000 * 60 * 60 * 24));
+                    const reviewCount = data.reviewCount || 0;
+                    
+                    if (reviewCount < intervals.length) {
+                        const nextReviewDay = intervals[reviewCount];
+                        if (daysSinceSolved >= nextReviewDay) {
+                            const problemName = id.replace(/^(DSA|ML|MATH|BEHAVIORAL)_/, '').replace(/_/g, ' ');
+                            revisionQueue.push({
+                                id: id,
+                                name: problemName,
+                                daysOverdue: daysSinceSolved - nextReviewDay,
+                                priority: reviewCount === 0 ? 'high' : 'medium'
+                            });
+                        }
+                    }
+                }
+            });
+            
+            revisionQueue.sort((a, b) => b.daysOverdue - a.daysOverdue);
+            
+            if (revisionQueue.length === 0) {
+                container.innerHTML = '<div class="text-center py-2 text-green-400">All caught up! 🎉</div>';
+            } else {
+                let html = '';
+                revisionQueue.slice(0, 5).forEach(item => {
+                    const priorityColor = item.priority === 'high' ? 'text-red-400' : 'text-yellow-400';
+                    html += `<div class="mb-1 p-1 bg-[#111] rounded border border-gray-800">
+                        <div class="text-[10px] ${priorityColor} font-bold">${item.name.substring(0, 30)}${item.name.length > 30 ? '...' : ''}</div>
+                        <div class="text-[9px] text-gray-500">${item.daysOverdue} days overdue</div>
+                    </div>`;
+                });
+                if (revisionQueue.length > 5) {
+                    html += `<div class="text-[9px] text-gray-500 text-center">+${revisionQueue.length - 5} more</div>`;
+                }
+                container.innerHTML = html;
+            }
+        }
+        
+        function showRevisionQueue() {
+            const modal = document.getElementById('analytics-modal');
+            const content = document.getElementById('analytics-content');
+            const now = Date.now();
+            const intervals = [1, 3, 7, 14];
+            const revisionQueue = [];
+            
+            Object.entries(state.completed).forEach(([id, data]) => {
+                if (data.timestamp && data.context === 'DSA') {
+                    const daysSinceSolved = Math.floor((now - data.timestamp) / (1000 * 60 * 60 * 24));
+                    const reviewCount = data.reviewCount || 0;
+                    
+                    if (reviewCount < intervals.length) {
+                        const nextReviewDay = intervals[reviewCount];
+                        if (daysSinceSolved >= nextReviewDay) {
+                            const problemName = id.replace(/^(DSA|ML|MATH|BEHAVIORAL)_/, '').replace(/_/g, ' ');
+                            revisionQueue.push({
+                                id: id,
+                                name: problemName,
+                                daysOverdue: daysSinceSolved - nextReviewDay,
+                                reviewCount: reviewCount,
+                                dateSolved: data.dateSolved
+                            });
+                        }
+                    }
+                }
+            });
+            
+            revisionQueue.sort((a, b) => b.daysOverdue - a.daysOverdue);
+            
+            let html = `
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-2">🔄 REVISION QUEUE</h3>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+            `;
+            
+            if (revisionQueue.length === 0) {
+                html += '<div class="text-center py-8 text-green-400">All caught up! No problems need revision. 🎉</div>';
+            } else {
+                revisionQueue.forEach(item => {
+                    html += `
+                        <div class="bg-[#111] p-3 rounded border border-gray-800 flex justify-between items-center">
+                            <div class="flex-1">
+                                <div class="text-sm text-white font-bold">${escapeHtml(item.name)}</div>
+                                <div class="text-[10px] text-gray-400 mt-1">
+                                    Solved: ${item.dateSolved} | Review #${item.reviewCount + 1} | ${item.daysOverdue} days overdue
+                                </div>
+                            </div>
+                            <button onclick="markReviewed('${item.id}')" class="ml-2 px-3 py-1 bg-green-600 text-white text-[10px] font-bold hover:bg-green-500 rounded">
+                                ✓ REVIEWED
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+            modal.classList.remove('hidden');
+        }
+        
+        function markReviewed(pid) {
+            if (state.completed[pid]) {
+                state.completed[pid].reviewCount = (state.completed[pid].reviewCount || 0) + 1;
+                state.completed[pid].lastReviewed = Date.now();
+                save();
+                showRevisionQueue(); // Refresh
+                updateRevisionQueue();
+            }
+        }
+        
+        // --- RECOMMENDATIONS ---
+        function updateRecommendations() {
+            const container = document.getElementById('recommendations-container');
+            if (!container) return;
+            const recommendations = [];
+            
+            // Recommend based on weak areas
+            const weakAreas = getWeakAreas();
+            const allProblems = getAllProblems();
+            
+            // Find problems in weak areas that aren't completed
+            weakAreas.forEach(area => {
+                const problemsInArea = allProblems.filter(p => {
+                    const meta = PROBLEM_METADATA[p];
+                    return meta && meta.topic === area.topic && !state.completed[generateId('DSA', p)];
+                });
+                
+                if (problemsInArea.length > 0) {
+                    recommendations.push({
+                        reason: `Weak in ${area.topic}`,
+                        problem: problemsInArea[0],
+                        priority: 'high'
+                    });
+                }
+            });
+            
+            // Recommend next problems in sequence
+            const allSchedules = [...dsaSchedule];
+            for (const day of allSchedules) {
+                for (const problem of day.problems) {
+                    if (!problem.startsWith('Subtopics:') && !problem.startsWith('(')) {
+                        const pid = generateId('DSA', problem);
+                        if (!state.completed[pid]) {
+                            recommendations.push({
+                                reason: 'Next in schedule',
+                                problem: problem,
+                                priority: 'medium'
+                            });
+                            break;
+                        }
+                    }
+                }
+                if (recommendations.length >= 3) break;
+            }
+            
+            if (recommendations.length === 0) {
+                container.innerHTML = '<div class="text-center py-2 text-green-400">Keep going! 🚀</div>';
+            } else {
+                let html = '';
+                recommendations.slice(0, 3).forEach(rec => {
+                    const priorityColor = rec.priority === 'high' ? 'text-red-400' : 'text-yellow-400';
+                    html += `<div class="mb-2 p-2 bg-[#111] rounded border border-gray-800">
+                        <div class="text-[10px] ${priorityColor} font-bold mb-1">${rec.reason}</div>
+                        <div class="text-[9px] text-gray-300">${escapeHtml(rec.problem.substring(0, 35))}${rec.problem.length > 35 ? '...' : ''}</div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            }
+        }
+        
+        function getWeakAreas() {
+            const topicStats = {};
+            
+            Object.entries(state.completed).forEach(([id, data]) => {
+                if (id.startsWith('DSA_')) {
+                    const problemName = id.replace('DSA_', '').replace(/_/g, ' ');
+                    const meta = PROBLEM_METADATA[problemName];
+                    if (meta && meta.topic) {
+                        if (!topicStats[meta.topic]) {
+                            topicStats[meta.topic] = { total: 0, completed: 0 };
+                        }
+                        topicStats[meta.topic].completed++;
+                    }
+                }
+            });
+            
+            Object.values(PROBLEM_METADATA).forEach(meta => {
+                if (meta.topic && meta.topic !== 'review') {
+                    if (!topicStats[meta.topic]) {
+                        topicStats[meta.topic] = { total: 0, completed: 0 };
+                    }
+                    topicStats[meta.topic].total++;
+                }
+            });
+            
+            return Object.entries(topicStats)
+                .filter(([topic, stats]) => stats.total > 0 && (stats.completed / stats.total) < 0.5)
+                .map(([topic, stats]) => ({ topic, stats }))
+                .sort((a, b) => (a.stats.completed / a.stats.total) - (b.stats.completed / b.stats.total))
+                .slice(0, 3);
+        }
+        
+        function getAllProblems() {
+            const problems = [];
+            dsaSchedule.forEach(day => {
+                day.problems.forEach(p => {
+                    if (!p.startsWith('Subtopics:') && !p.startsWith('(')) {
+                        problems.push(p);
+                    }
+                });
+            });
+            return problems;
+        }
+
+        // --- SAVE SYSTEM (CHRONOS) ---
+        function renderSaveSlots() {
+            const container = document.getElementById('save-slots-container');
+            container.innerHTML = '';
+            const labels = ["AUTO-SAVE", "SLOT 1", "SLOT 2"];
+            
+            state.saveSlots.forEach((slot, idx) => {
+                if (!slot) {
+                    container.innerHTML += `<div class="save-slot empty"><span>${labels[idx]} (EMPTY)</span></div>`;
+                } else {
+                    container.innerHTML += `<div class="save-slot cursor-pointer" onclick="loadGame(${idx})">
+                        <div><span class="text-[#00f3ff] font-bold">${labels[idx]}</span><br><span class="text-gray-500">${slot.date}</span></div>
+                        <div class="text-[#00f3ff] text-xs">LOAD ↺</div>
+                    </div>`;
+                }
+            });
+        }
+
+        async function saveGame(slotIdx) {
+            if(!confirm("Create Manual Checkpoint?")) return;
+            state.saveSlots[slotIdx] = { date: new Date().toLocaleString(), data: JSON.stringify(state) }; 
+            await save();
+            renderSaveSlots();
+        }
+
+        async function loadGame(slotIdx) {
+            if(!state.saveSlots[slotIdx]) return;
+            if(!confirm("REVERT WORLD LINE? All progress since this save will be lost.")) return;
+            const backup = JSON.parse(state.saveSlots[slotIdx].data);
+            state = backup;
+            await save();
+            location.reload();
+        }
+
+        // --- SOUL CRYSTAL (JSON BACKUP) ---
+        function downloadBackup() {
+            const dataStr = JSON.stringify(state);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `Shadow_Monarch_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            alert("SOUL EXTRACTED SAFELY.");
+        }
+
+        function triggerUpload() { document.getElementById('backup-upload').click(); }
+
+        function uploadBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const content = e.target.result;
+                    const parsed = JSON.parse(content);
+                    if (!parsed.stats || !parsed.legions) { alert("INVALID SOUL FRAGMENT. File corrupted."); return; }
+                    if(confirm("WARNING: REINCARNATION WILL OVERWRITE CURRENT TIMELINE. PROCEED?")) {
+                        state = parsed; 
+                        await StorageManager.save(); 
+                        location.reload();
+                    }
+                } catch(err) { alert("FAILED TO READ SOUL FILE."); console.error(err); }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- GOLD MEDAL (CSV) ---
+        function checkLegacyUnlock() {
+            const now = new Date();
+            const gate = new Date('2026-01-05');
+            const totalTasks = dsaSchedule.reduce((a,b)=>a+b.problems.length,0);
+            const doneTasks = Object.keys(state.completed).length;
+            
+            if (now > gate || doneTasks >= totalTasks) {
+                const btn = document.getElementById('btn-legacy');
+                btn.classList.remove('btn-locked', 'bg-[#222]', 'color-[#555]');
+                btn.classList.add('bg-yellow-500', 'text-black', 'hover:bg-white');
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="trophy" class="w-3 h-3"></i> DOWNLOAD LEGACY (UNLOCKED)`;
+                if(window.lucide) lucide.createIcons();
+            }
+        }
+
+        function exportLegacy() {
+            if (document.getElementById('btn-legacy').classList.contains('btn-locked')) { 
+                alert("GATE LOCKED. Survive until Jan 5 or Complete 100%."); 
+                return; 
+            }
+            let csv = "Problem,Context,Status,Time Complexity,Space Complexity,Date Solved,Notes\n";
+            Object.entries(state.completed).forEach(([id, data]) => { 
+                // Extract problem name from ID (remove context prefix)
+                const problemName = id.replace(/^(DSA|ML|MATH|BEHAVIORAL)_/, '').replace(/_/g, ' ');
+                const context = data.context || (id.startsWith('DSA_') ? 'DSA' : (id.startsWith('ML_') ? 'ML' : (id.startsWith('MATH_') ? 'MATH' : 'BEHAVIORAL')));
+                const status = data.retreat ? 'Retreat' : 'Clean';
+                const timeComplexity = data.timeComplexity || '';
+                const spaceComplexity = data.spaceComplexity || '';
+                const dateSolved = data.dateSolved || (data.timestamp ? new Date(data.timestamp).toLocaleDateString() : '');
+                const notes = (data.notes || '').replace(/"/g, '""'); // Escape quotes in CSV
+                csv += `"${problemName}","${context}","${status}","${timeComplexity}","${spaceComplexity}","${dateSolved}","${notes}"\n`; 
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `Shadow_Monarch_Legacy_${new Date().toISOString().slice(0,10)}.csv`; 
+            a.click();
+        }
+
+        // --- UTILS & RENDERERS ---
+        function updateStats() {
+            document.getElementById('stat-str').innerText = state.stats.str;
+            document.getElementById('stat-int').innerText = state.stats.int;
+            document.getElementById('stat-spd').innerText = state.stats.spd;
+            document.getElementById('level-display').innerText = Math.floor(state.xp / 100) + 1;
+        }
+
+        function renderArmy() {
+            const cGrid = document.getElementById('commander-grid');
+            let commanderHtml = '';
+            
+            if (state.unlockedShadows.length === 0) {
+                commanderHtml = `<div class="text-xs text-gray-600 text-center py-4 border border-dashed border-gray-800">NO COMMANDERS ARISEN</div>`;
+            } else {
+                state.unlockedShadows.forEach(s => {
+                    const border = s.rank === 'S' || s.rank === 'SS' ? 'shadow-rank-s' : 'border-purple-900';
+                    const color = s.rank === 'S' || s.rank === 'SS' ? 'text-yellow-500' : 'text-purple-400';
+                    commanderHtml += `<div class="shadow-card p-3 rounded flex justify-between items-center ${border}">
+                        <div><div class="text-xs text-gray-400 font-bold tracking-wider">COMMANDER</div><div class="text-sm font-black text-white">${escapeHtml(s.name)}</div></div>
+                        <div class="text-xl font-black ${color}">${s.rank}</div>
+                    </div>`;
+                });
+            }
+            cGrid.innerHTML = commanderHtml;
+
+            const lGrid = document.getElementById('legion-grid');
+            let legionHtml = '';
+            Object.entries(state.legions).forEach(([type, count]) => {
+                if (count > 0) {
+                    let icon = '♟';
+                    if (type === 'Mage') icon = '⚡';
+                    if (type === 'Tank') icon = '🛡';
+                    if (type === 'Assassin') icon = '🗡';
+                    if (type === 'Construct') icon = '🤖';
+                    if (type === 'Rune') icon = '📜';
+                    
+                    legionHtml += `<div class="bg-[#111] p-2 rounded border border-gray-800 text-center">
+                        <div class="text-xs text-gray-500 mb-1">${type.toUpperCase()}</div>
+                        <div class="text-lg font-bold text-white">${icon} x${count}</div>
+                    </div>`;
+                }
+            });
+            lGrid.innerHTML = legionHtml;
+        }
+
+        function generateId(ctx, val) { return ctx + '_' + String(val).replace(/[^a-zA-Z0-9]/g, '_'); }
+        
+        // Enhanced save with IndexedDB (no compression needed - IndexedDB has huge capacity)
+        async function save() { 
+            await StorageManager.save();
+        }
+        
+        function handleQuotaExceeded() {
+            const choice = confirm('STORAGE FULL! Clean old save slots? (Recommended: YES)');
+            if (choice) {
+                // Keep only auto-save and most recent manual save
+                const autoSave = state.saveSlots[0];
+                const manualSaves = state.saveSlots.slice(1).filter(s => s !== null);
+                const mostRecent = manualSaves.sort((a, b) => 
+                    new Date(b.date) - new Date(a.date)
+                )[0];
+                
+                state.saveSlots = [autoSave, mostRecent || null, null];
+                
+                // Also clean old completed entries (keep last 500)
+                const completedEntries = Object.entries(state.completed);
+                if (completedEntries.length > 500) {
+                    const sorted = completedEntries.sort((a, b) => 
+                        (b[1].timestamp || 0) - (a[1].timestamp || 0)
+                    );
+                    state.completed = Object.fromEntries(sorted.slice(0, 500));
+                }
+                
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                    alert('STORAGE CLEANED. Please backup your data!');
+                } catch (e2) {
+                    alert('CRITICAL: Storage still full. Please export your data immediately!');
+                    downloadBackup();
+                }
+            } else {
+                alert('STORAGE FULL. Please export your data before continuing!');
+            }
+        }
+        
+        function showSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            if (indicator) {
+                indicator.classList.remove('hidden');
+                setTimeout(() => indicator.classList.add('hidden'), 2000);
+            }
+        }
+        function escapeHtml(text) { 
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        async function resetSystem() { 
+            if(confirm("NUKE ALL PROGRESS?")) { 
+                await StorageManager.reset();
+                location.reload(); 
+            } 
+        }
+
+        function startCountdown() {
+            const target = new Date('2026-01-05T09:00:00').getTime();
+            
+            function updateTimer() {
+                const now = Date.now();
+                const diff = target - now;
+                if (diff < 0) { 
+                    document.getElementById('countdown').innerText = "GATE OPEN"; 
+                    checkLegacyUnlock(); 
+                    return; 
+                }
+                const d = Math.floor(diff / (1000*60*60*24));
+                const h = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+                const m = Math.floor((diff % (1000*60*60)) / (1000*60));
+                document.getElementById('countdown').innerText = `${d}D ${h}H ${m}M`;
+            }
+            
+            updateTimer();
+            setInterval(updateTimer, 60000);
+        }
+        
+        // Track daily activity for streak
+        function trackDailyActivity() {
+            const today = new Date().toDateString();
+            if (!state.dailyActivity) state.dailyActivity = {};
+            if (!state.dailyActivity[today]) {
+                state.dailyActivity[today] = { problems: 0, time: 0 };
+            }
+            state.dailyActivity[today].problems++;
+        }
+
+        // INIT - Start storage initialization
+        StorageManager.init();
+    </script>
+</body>
+</html>
