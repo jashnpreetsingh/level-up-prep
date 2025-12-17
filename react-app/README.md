@@ -1,4 +1,4 @@
-# 🌑 Shadow Monarch Training System
+# 🌑 Training System
 
 > *"Arise."* - Daily quest tracker for ML Engineer interview prep
 
